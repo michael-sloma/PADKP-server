@@ -1,0 +1,60 @@
+1	Jander	60	Warrior	Group Leader			Yes	
+1	Cannabiss	60	Cleric				Yes	
+1	Thedudee	60	Bard				Yes	
+1	Zogrul	60	Shadow Knight				Yes	
+1	Wisher	60	Warrior				Yes	
+1	Drax	60	Monk				Yes	
+2	Mythwalker	60	Paladin	Group Leader			Yes	
+2	Crusade	60	Paladin	Raid Leader			Yes	
+2	Dezert	60	Monk				Yes	
+2	Cupcake	60	Druid				Yes	
+2	Zugru	60	Warrior				Yes	
+2	Emalith	60	Cleric				Yes	
+3	Barkoren	60	Warrior	Group Leader			Yes	
+3	Bloodsong	60	Bard				Yes	
+3	Lyfeless	60	Warrior				Yes	
+3	Siranel	60	Druid				Yes	
+3	Arthirius	60	Cleric				Yes	
+3	Saurus	59	Shaman				Yes	
+4	Zakeus	60	Druid	Group Leader			Yes	
+4	Bruisin	60	Monk				Yes	
+4	Kakanin	60	Rogue				Yes	
+4	Thorius	60	Bard				Yes	
+4	Prehab	60	Monk				Yes	
+4	Krrill	60	Rogue				Yes	
+5	Solain	60	Ranger	Group Leader			Yes	
+5	Deathbow	60	Ranger				Yes	
+5	Stauphett	60	Bard				Yes	
+5	Huppoy	60	Shadow Knight				Yes	
+5	Voluptous	60	Shaman				Yes	
+5	Teucer	60	Ranger				Yes	
+6	Fonadil	60	Enchanter	Group Leader			Yes	
+6	Senadwen	57	Cleric				Yes	
+6	Nyite	60	Enchanter				Yes	
+6	Lilgent	57	Wizard				Yes	
+6	Sneakysk	60	Shadow Knight				Yes	
+6	Magestick	60	Magician				Yes	
+7	Pharun	60	Necromancer	Group Leader			Yes	
+7	Fullcure	53	Cleric				Yes	
+7	Sparqs	60	Wizard				Yes	
+7	Burgerr	60	Shaman				Yes	
+7	Buberi	60	Enchanter				Yes	
+7	Tulalou	60	Paladin				Yes	
+8	Graves	60	Necromancer	Group Leader			Yes	
+8	Helphealme	55	Cleric				Yes	
+8	Brainfreak	60	Enchanter				Yes	
+8	Ruven	60	Necromancer				Yes	
+8	Brainpet	60	Magician				Yes	
+8	Boudicca	60	Shadow Knight				Yes	
+9	Deathwiz	55	Wizard	Group Leader			Yes	
+9	Mystica	60	Enchanter				Yes	
+9	Rukulis	60	Necromancer				Yes	
+9	Crenshin	53	Cleric				Yes	
+9	Veganbaby	60	Necromancer				Yes	
+9	Vegancat	60	Druid				Yes	
+10	Sabina	60	Cleric	Group Leader			Yes	
+10	Bodax	60	Ranger				Yes	
+10	Sayadina	60	Bard				Yes	
+10	Shanoa	60	Wizard				Yes	
+10	Judeau	60	Monk				Yes	
+10	Boja	60	Ranger				Yes	
