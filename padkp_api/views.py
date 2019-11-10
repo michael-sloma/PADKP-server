@@ -1,6 +1,8 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 
 from . import serializers
 from padkp_show import models
@@ -9,6 +11,8 @@ from padkp_show import models
 class DkpAwardViewSet(viewsets.ModelViewSet):
     queryset = models.DkpAward.objects.all().order_by('time')
     serializer_class = serializers.DkpAwardSerializer
+    authentication_classes = (TokenAuthentication,)
+    permission_classes = (IsAuthenticated,)
 
     def create(self, request, *args, **kwargs):
         data = request.data.get("items") if 'items' in request.data else request.data

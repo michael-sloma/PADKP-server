@@ -4,11 +4,15 @@ from django.http import HttpResponse
 from rest_framework import viewsets, routers
 
 from django.db.models import Sum
-from .models import Purchase, DkpAward
+from .models import Purchase, DkpAward, Character
 
 
 def index(request):
-    return HttpResponse("Hello PA!")
+    #total_awards = DkpAward.objects.values('character').annotate(total=sum('value'))
+    total_awards = list(DkpAward.objects.values('character').annotate(total=Sum('value')))
+    result = '<br>'.join('{}\t{}'.format(doc['character'], doc['total']) for doc in total_awards)
+
+    return HttpResponse(result)
 
 
 def character_dkp(request, character):
