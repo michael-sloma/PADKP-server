@@ -4,12 +4,12 @@ from django.http import HttpResponse
 from rest_framework import viewsets, routers
 
 from django.db.models import Sum
-from .models import Purchase, DkpAward, Character
+from .models import Purchase, Character, RaidDump
 
 
 def index(request):
-    #total_awards = DkpAward.objects.values('character').annotate(total=sum('value'))
-    total_awards = list(DkpAward.objects.values('character').annotate(total=Sum('value')))
+    total_awards = list(RaidDump.objects.values('characters_present__name').annotate(total=Sum('value')))
+
     result = '<br>'.join('{}\t{}'.format(doc['character'], doc['total']) for doc in total_awards)
 
     return HttpResponse(result)
@@ -17,8 +17,7 @@ def index(request):
 
 def character_dkp(request, character):
     character = character.capitalize()
-    awards = DkpAward.objects.filter(character=character).aggregate(Sum('value'))['value__sum'] or 0
-    purchases = Purchase.objects.filter(character=character).aggregate(Sum('price'))['price__sum'] or 0
+    purchases = Purchase.objects.filter(character=character).aggregate(Sum('value'))['value__sum'] or 0
     total = "{} has {} dkp".format(character, awards-purchases)
     return HttpResponse(total)
 
@@ -35,4 +34,12 @@ def character_purchases(request, character):
     purchases = Purchase.objects.filter(character=character)
     text = "\n".join(str(purchase) for purchase in purchases)
     return HttpResponse(text)
+
+
+def character_page(request, character):
+    name = character.capitalize()
+    character = Character.objects.get(pk=name)
+    awards = DkpAward.objects.filter(character=character)
+    purchases = Purchase.objects.filter(character=character)
+    pass
 

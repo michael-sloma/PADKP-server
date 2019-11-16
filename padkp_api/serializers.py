@@ -3,12 +3,6 @@ from rest_framework import serializers
 from padkp_show import models
 
 
-class DkpAwardSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.DkpAward
-        fields = ('character', 'award_type', 'value', 'time', 'notes')
-
-
 class PurchaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Purchase
