@@ -7,6 +7,7 @@ router = routers.DefaultRouter()
 #router.register(r'purchases', views.PurchaseViewSet)
 router.register(r'characters', views.CharacterViewSet)
 router.register(r'upload_dump', views.UploadRaidDump)
+router.register(r'charge_dkp', views.ChargeDKP)
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

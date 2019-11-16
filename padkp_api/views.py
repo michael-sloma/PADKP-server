@@ -3,6 +3,8 @@ API used by the desktop auction manager client to charge and award DKP
 """
 import datetime as dt
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
@@ -72,26 +74,27 @@ class UploadRaidDump(viewsets.ViewSet):
 
 
 
-class ChargeDKP(APIView):
+class ChargeDKP(viewsets.ViewSet):
     """ Charge DKP for an item """
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = models.Purchase.objects.all()
 
-    def post(self, request):
-        models.Purchase.create(
-            character=request.data['character'],
+    def create(self, request):
+        cname = request.data['character']
+        try:
+            character_obj = models.Character.objects.get(pk=cname)
+        except ObjectDoesNotExist:
+            return Response('{} does not exist in the database. Create the character first!'.format(cname),
+                            status=status.HTTP_400_BAD_REQUEST)
+        models.Purchase(
+            character=character_obj,
             item_name=request.data['item_name'],
             value=request.data['value'],
             time=request.data['time'],
             notes=request.data['notes']
-        )
+        ).save()
         return Response('DKP charge successful', status=status.HTTP_201_CREATED)
-
-    @classmethod
-    def get_extra_actions(cls):
-        """ some BS to satisfy django router"""
-        return []
 
 
 class CharacterViewSet(viewsets.ModelViewSet):
