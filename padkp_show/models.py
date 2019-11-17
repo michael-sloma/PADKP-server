@@ -55,6 +55,7 @@ class DkpSpecialAward(models.Model):
     character = models.ForeignKey(Character, on_delete=models.CASCADE)
     value = models.IntegerField()
     attendance_value = models.IntegerField()
+    time = models.DateTimeField(default=dt.datetime.utcnow, blank=True)
     notes = models.TextField(default="", blank=True)
 
 
@@ -63,7 +64,7 @@ class Purchase(models.Model):
     character = models.ForeignKey(Character, on_delete=models.CASCADE)
     item_name = models.CharField(max_length=200)
     value = models.IntegerField()
-    time = models.DateTimeField(default=dt.datetime.utcnow())
+    time = models.DateTimeField(default=dt.datetime.utcnow)
     notes = models.TextField(default="", blank=True)
 
     def __str__(self):
