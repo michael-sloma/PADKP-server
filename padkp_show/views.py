@@ -60,34 +60,19 @@ def character_dkp(request, character):
     my_attendance_points = (my_raid_dumps_30['total'] or 0) + (my_awards_30['total'] or 0)
     attendance_30 = 100 * float(my_attendance_points) / raid_dumps_30['total']
 
+    awards_30 = [str(x) for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] + \
+                [str(x) for x in DkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)]
+    purchases_30 = [str(x) for x in Purchase.objects.filter(time__gte=days_ago_30, character=character)]
+
     context = {'attendance_30': attendance_30,
                'attendance_60': attendance_60,
                'current_dkp': current_dkp,
                'name': c_obj.name,
                'character_class': c_obj.character_class,
-               'rank': c_obj.status}
+               'rank': c_obj.status,
+               'purchases_30': purchases_30,
+               'awards_30': awards_30}
 
     return HttpResponse(template.render(context, request))
 
-
-def character_awards(request, character):
-    character = character.capitalize()
-    awards = DkpAward.objects.filter(character=character)
-    text = "\n".join(str(award) for award in awards)
-    return HttpResponse(text)
-
-
-def character_purchases(request, character):
-    character = character.capitalize()
-    purchases = Purchase.objects.filter(character=character)
-    text = "\n".join(str(purchase) for purchase in purchases)
-    return HttpResponse(text)
-
-
-def character_page(request, character):
-    name = character.capitalize()
-    character = Character.objects.get(pk=name)
-    awards = DkpAward.objects.filter(character=character)
-    purchases = Purchase.objects.filter(character=character)
-    pass
 

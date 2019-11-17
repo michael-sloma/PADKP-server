@@ -1,8 +1,8 @@
 import datetime as dt
+import pytz
 
 from django.db import models
 from django.db.models import Sum
-
 
 EQ_CLASSES = [
     'Warrior', 'Paladin', 'Shadow Knight',  'Beastlord', 'Berserker', 'Monk',
@@ -43,6 +43,11 @@ class RaidDump(models.Model):
                     ('Other', 'Other')]
     award_type = models.CharField(max_length=2, choices=type_choices)
     notes = models.TextField(default="", blank=True)
+
+    def __str__(self):
+        attendance_str = '' if self.attendance_value else " (not counted for attendance)"
+        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %l:%M %p Eastern')
+        return '{} for {} on {}{}'.format(self.value, self.award_type, time_str, attendance_str)
 
 
 class DkpSpecialAward(models.Model):
