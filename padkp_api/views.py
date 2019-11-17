@@ -100,3 +100,8 @@ class ChargeDKP(viewsets.ViewSet):
 class CharacterViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CharacterSerializer
     queryset = models.Character.objects.all()
+
+
+class DkpSpecialAwardViewSet(viewsets.ModelViewSet):
+    serializer_class = serializers.DkpSpecialAwardSerializer
+    queryset = models.DkpSpecialAward.objects.all()

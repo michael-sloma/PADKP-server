@@ -12,5 +12,10 @@ class PurchaseSerializer(serializers.ModelSerializer):
 class CharacterSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Character
-        fields = ('name', 'status')
+        fields = ('name', 'status', 'character_class')
+
+class DkpSpecialAwardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.DkpSpecialAward
+        fields = ('character', 'value', 'attendance_value', 'time', 'notes')
 
