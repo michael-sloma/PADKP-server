@@ -63,6 +63,11 @@ class DkpSpecialAward(models.Model):
     time = models.DateTimeField(default=dt.datetime.utcnow, blank=True)
     notes = models.TextField(default="", blank=True)
 
+    def __str__(self):
+        attendance_str = '' if self.attendance_value else " (not counted for attendance)"
+        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %l:%M %p Eastern')
+        return '{} on {}{}'.format(self.value, time_str, attendance_str)
+
 
 class Purchase(models.Model):
     """ Represents a character spending DKP for an item"""
