@@ -28,8 +28,8 @@ def index(request):
         spent = total_spent.get(character.name, 0)
         earned = total_earned.get(character.name, 0) + total_extra.get(character.name, 0)
         result.append({'name': character.name, 'character_class': character.character_class,
-                       'character_status': character.status, 'current_dkp': earned - spent})
-
+                       'character_status': character.get_status_display(), 'current_dkp': earned - spent})
+    result = sorted(result, key=lambda x: x['name'])
     return HttpResponse(template.render({'records': result}, request))
 
 
@@ -69,7 +69,7 @@ def character_dkp(request, character):
                'current_dkp': current_dkp,
                'name': c_obj.name,
                'character_class': c_obj.character_class,
-               'rank': c_obj.status,
+               'rank': c_obj.get_status_display(),
                'purchases_30': purchases_30,
                'awards_30': awards_30}
 
