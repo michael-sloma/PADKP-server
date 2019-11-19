@@ -41,7 +41,7 @@ class RaidDump(models.Model):
     type_choices = [('Time', 'Time'),
                     ('Boss Kill', 'Boss Kill'),
                     ('Other', 'Other')]
-    award_type = models.CharField(max_length=2, choices=type_choices)
+    award_type = models.CharField(max_length=15, choices=type_choices)
     notes = models.TextField(default="", blank=True)
 
     def __str__(self):
@@ -66,7 +66,7 @@ class DkpSpecialAward(models.Model):
     def __str__(self):
         attendance_str = '' if self.attendance_value else " (not counted for attendance)"
         time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %l:%M %p Eastern')
-        return '{} on {}{}'.format(self.value, time_str, attendance_str)
+        return '{} to {} on {}{}'.format(self.value, self.character, time_str, attendance_str)
 
 
 class Purchase(models.Model):

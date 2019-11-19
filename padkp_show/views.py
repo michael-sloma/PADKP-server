@@ -50,7 +50,7 @@ def character_dkp(request, character):
     my_raid_dumps_60 = RaidDump.objects.filter(time__gte=days_ago_60).filter(characters_present=character).aggregate(total=Sum('attendance_value'))
     my_awards_60 = DkpSpecialAward.objects.filter(time__gte=days_ago_60).filter(character=character).aggregate(total=Sum('attendance_value'))
     my_attendance_points = (my_raid_dumps_60['total'] or 0) + (my_awards_60['total'] or 0)
-    attendance_60 = 100 * float(my_attendance_points) / raid_dumps_60['total']
+    attendance_60 = '%.1f' % (100 * float(my_attendance_points) / raid_dumps_60['total'])
 
 
     days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
@@ -58,7 +58,7 @@ def character_dkp(request, character):
     my_raid_dumps_30 = RaidDump.objects.filter(time__gte=days_ago_30).filter(characters_present=character).aggregate(total=Sum('attendance_value'))
     my_awards_30 = DkpSpecialAward.objects.filter(time__gte=days_ago_30).filter(character=character).aggregate(total=Sum('attendance_value'))
     my_attendance_points = (my_raid_dumps_30['total'] or 0) + (my_awards_30['total'] or 0)
-    attendance_30 = 100 * float(my_attendance_points) / raid_dumps_30['total']
+    attendance_30 = '%.1f' % (100 * float(my_attendance_points) / raid_dumps_30['total'])
 
     awards_30 = [str(x) for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] + \
                 [str(x) for x in DkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)]
