@@ -1,17 +1,39 @@
+<head>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/css/theme.default.min.css" />
 
-<table class="table">
-  <tr>
-    <th>Character</th>
-    <th>Class</th>
-    <th>Status</th>
-    <th>Current DKP</th>
-  </tr>
- 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.widgets.js"></script>
+<script>
+$(function(){
+    $('#current_dkp').tablesorter({
+	//headerTemplate: '{content} {icon}',
+		headers: {3: {lockedOrder: 'dsc'}}
+    });
+});
+</script>
+
+</head>
+
+<table id="current_dkp" class="table table-sm table-striped tablesorter">
+    <thead>
+    <tr>
+      <th>Character</th>
+      <th>Class</th>
+      <th>Status</th>
+      <th>Current DKP</th>
+    </tr>
+    </thead>
+
+    <tbody>
 {% for record in records %}
 <tr>
   <td><a href="/{{record.name}}">{{record.name}}</a></td>
   <td>{{record.character_class}}</td>
   <td>{{record.character_status}}</td>
   <td>{{record.current_dkp}}</td>
+</tr>
 {% endfor %}
+    </tbody>
+</table>

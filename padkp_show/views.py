@@ -33,6 +33,32 @@ def index(request):
     return HttpResponse(template.render({'records': result}, request))
 
 
+def attendance_table(request):
+    template = loader.get_template('padkp_show/attendance.html')
+
+    dumps = RaidDump.objects.values('characters_present').annotate(attendance_value=Sum('attendance_value'))
+    total_earned = {x['characters_present']: x['attendance_value'] for x in dumps}
+
+    extra_awards = DkpSpecialAward.objects.values('character').annotate(attendance_value=Sum('attendance_value'))
+    total_extra = {x['character']: x['attendance_value'] for x in extra_awards}
+
+    total_dumps = sum(dump.attendance_value for dump in RaidDump.objects.all())
+
+    result = []
+    for character in Character.objects.all():
+        if character.name == 'Vysen': #  sorry Vysen
+            continue
+        attendance_points = total_earned.get(character.name, 0) + total_extra.get(character.name, 0)
+        attendance = '%.1f' % (100 * float(attendance_points) / total_dumps )
+
+        result.append({'name': character.name, 'character_class': character.character_class,
+                       'character_status': character.get_status_display(), 'attendance': attendance})
+    result = sorted(result, key=lambda x: float(x['attendance']), reverse=True)
+
+    extra = {'total_dumps': total_dumps, 'total_earned': total_earned, 'total_extra': total_extra}
+    return HttpResponse(template.render({'records': result, 'extra': extra}, request))
+
+
 def character_dkp(request, character):
     template = loader.get_template('padkp_show/character_page.html')
     character = character.capitalize()
@@ -60,9 +86,11 @@ def character_dkp(request, character):
     my_attendance_points = (my_raid_dumps_30['total'] or 0) + (my_awards_30['total'] or 0)
     attendance_30 = '%.1f' % (100 * float(my_attendance_points) / raid_dumps_30['total'])
 
-    awards_30 = [str(x) for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] + \
-                [str(x) for x in DkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)]
-    purchases_30 = [str(x) for x in Purchase.objects.filter(time__gte=days_ago_30, character=character)]
+    awards_30 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] +
+                       [x for x in DkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)],
+                       key = lambda x: x.time, reverse=True)
+    awards_30 = [str(x) for x in awards_30]
+    purchases_30 = [str(x) for x in Purchase.objects.filter(time__gte=days_ago_30, character=character).order_by('-time')]
 
     context = {'attendance_30': attendance_30,
                'attendance_60': attendance_60,

@@ -4,17 +4,17 @@
 <p><h2>{{ character_class }} ({{rank}})</h2></p>
 <p>Current DKP: {{ current_dkp }}</p>
 <p>Attendance (30 days): {{ attendance_30 }}%</p>
-<p>Recent purchases:<br>
-    <ul style="list-style-type:none;">
-    {% for purchase in purchases_30 %}
-        <li>{{purchase}}</li>
-    {% endfor %}
-    </ul>
-</p>
 <p>Recent DKP awards:<br>
     <ul style="list-style-type:none;">
     {% for award in awards_30 %}
         <li>{{award}}</li>
+    {% endfor %}
+    </ul>
+</p>
+<p>Recent purchases:<br>
+    <ul style="list-style-type:none;">
+    {% for purchase in purchases_30 %}
+        <li>{{purchase}}</li>
     {% endfor %}
     </ul>
 </p>
