@@ -104,3 +104,24 @@ def character_dkp(request, character):
     return HttpResponse(template.render(context, request))
 
 
+def items(request):
+    template = loader.get_template('padkp_show/items.html')
+
+    dumps = RaidDump.objects.values('characters_present').annotate(value=Sum('value'))
+    total_earned = {x['characters_present']: x['value'] for x in dumps}
+
+    purchases = Purchase.objects.values('character').annotate(value=Sum('value'))
+    result = []
+
+    return HttpResponse(template.render({'records': result}, request))
+
+
+def awards(request):
+    template = loader.get_template('padkp_show/awards.html')
+
+    dumps = RaidDump.objects.values('characters_present').annotate(value=Sum('value'))
+    total_earned = {x['characters_present']: x['value'] for x in dumps}
+    result = []
+
+    return HttpResponse(template.render({'records': result}, request))
+
