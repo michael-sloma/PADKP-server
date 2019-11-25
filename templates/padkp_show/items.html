@@ -1,4 +1,16 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/css/theme.default.min.css" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.widgets.js"></script>
+<script>
+$(function(){
+    $('#current_dkp').tablesorter({
+
+    });
+});
+</script>
 
 <nav class="navbar navbar-default">
   <div class="container-fluid">
@@ -14,5 +26,24 @@
   </div>
 </nav>
 
+<table id="current_dkp" class="table table-sm table-striped tablesorter">
+  <thead>
+  <tr>
+    <th>Item</th>
+    <th>Awarded To</th>
+    <th>Date</th>
+    <th>Price</th>
+  </tr>
+  </thead>
 
-Page Under Construction
+  <tbody>
+  {% for record in records %}
+  <tr>
+    <td>{{record.item_name}}</td>
+    <td><a href="/{{record.character}}">{{record.character}}</a></td>
+    <td>{{record.time | date:'Y-m-d'}}</td>
+    <td>{{record.value}}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
