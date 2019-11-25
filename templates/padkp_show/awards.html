@@ -14,5 +14,26 @@
   </div>
 </nav>
 
+<table id="awards" class="table table-sm table-striped">
+  <thead>
+  <tr>
+    <th>Date</th>
+    <th>Reason</th>
+    <th>Attendance Counted?</th>
+    <th>Value</th>
+    <th>Notes</th>
+  </tr>
+  </thead>
 
-Page Under Construction
+  <tbody>
+  {% for record in records %}
+  <tr>
+    <td>{{record.time }}</td>
+    <td>{{record.award_type}}</td>
+    <td>{{record.attendance_value}}</td>
+    <td>{{record.value}}</td>
+    <td>{{record.notes}}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
