@@ -30,7 +30,7 @@
   <tr>
     <td>{{record.time }}</td>
     <td>{{record.award_type}}</td>
-    <td>{{record.attendance_value}}</td>
+    <td>{{record.attendance_value | yesno:"Yes,No"}}</td>
     <td>{{record.value}}</td>
     <td>{{record.notes}}</td>
   </tr>
