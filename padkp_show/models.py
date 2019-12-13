@@ -46,7 +46,7 @@ class RaidDump(models.Model):
 
     def __str__(self):
         attendance_str = '' if self.attendance_value else " (not counted for attendance)"
-        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %l:%M %p Eastern')
+        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
         return '{} for {} on {}{}'.format(self.value, self.award_type, time_str, attendance_str)
 
 
@@ -65,7 +65,7 @@ class DkpSpecialAward(models.Model):
 
     def __str__(self):
         attendance_str = '' if self.attendance_value else " (not counted for attendance)"
-        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %l:%M %p Eastern')
+        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
         return '{} to {} on {}{}'.format(self.value, self.character, time_str, attendance_str)
 
 

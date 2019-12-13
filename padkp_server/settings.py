@@ -25,7 +25,7 @@ SECRET_KEY = '$akk$k%-08x!s4q**b^ojx1qc_$1*t8a7w!!%!xy587pqgp82i'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['padkp', 'padkp.net']
+ALLOWED_HOSTS = ['padkp', 'padkp.net', 'localhost']
 
 
 # Application definition
