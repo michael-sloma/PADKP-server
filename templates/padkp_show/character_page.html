@@ -11,6 +11,13 @@
     {% endfor %}
     </ul>
 </p>
+<p>Recent Missed DKP awards:<br>
+    <ul style="list-style-type:none;">
+    {% for award in missed_awards_30 %}
+        <li>{{award}}</li>
+    {% endfor %}
+    </ul>
+</p>
 <p>Recent purchases:<br>
     <ul style="list-style-type:none;">
     {% for purchase in purchases_30 %}
