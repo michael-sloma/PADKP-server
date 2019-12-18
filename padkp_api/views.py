@@ -22,7 +22,7 @@ def _parse_dump(dump_contents):
         if not line.strip():
             continue
         print(line)
-        split_line = line.split('\t')
+        split_line = line.split()
         name = split_line[1]
         character_class = split_line[3]
         result.append({'name': name, 'character_class': character_class})
