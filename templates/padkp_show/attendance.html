@@ -11,16 +11,29 @@
     </ul>
   </div>
 </nav>
-
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-<table class="table">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/css/theme.default.min.css" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.widgets.js"></script>
+<script>
+$(function(){
+    $('#current_dkp').tablesorter({
+    });
+});
+</script>
+
+<table id="current_dkp" class="table table-sm table-striped tablesorter">
+<thead>
   <tr>
     <th>Character</th>
     <th>Class</th>
     <th>Status</th>
     <th>Attendance (30 days)</th>
   </tr>
- 
+</thead> 
+<tbody>
 {% for record in records %}
 <tr>
   <td><a href="/{{record.name}}">{{record.name}}</a></td>
@@ -28,3 +41,5 @@
   <td>{{record.character_status}}</td>
   <td>{{record.attendance}}</td>
 {% endfor %}
+</tbody>
+</table>
