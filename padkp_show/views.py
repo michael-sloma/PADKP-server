@@ -86,10 +86,16 @@ def character_dkp(request, character):
     my_attendance_points = (my_raid_dumps_30['total'] or 0) + (my_awards_30['total'] or 0)
     attendance_30 = '%.1f' % (100 * float(my_attendance_points) / raid_dumps_30['total'])
 
-    awards_30 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] +
-                       [x for x in DkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)],
-                       key = lambda x: x.time, reverse=True)
-    awards_30 = [str(x) for x in awards_30]
+    days_ago_14 = dt.datetime.utcnow() - dt.timedelta(days=14)
+    present_awards_14 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] +
+                               [x for x in DkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)],
+                               key = lambda x: x.time, reverse=True)
+    missed_awards_14 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_14).exclude(characters_present=character)],
+                              key = lambda x: x.time, reverse=True)
+    awards_14 = [{'award': x, 'present': True} for x in present_awards_14] + \
+                [{'award': x, 'present': False} for x in missed_awards_14]
+    awards_14 = sorted(awards_14, key=lambda x: x['award'].time, reverse=True)
+
     purchases_30 = [str(x) for x in Purchase.objects.filter(time__gte=days_ago_30, character=character).order_by('-time')]
 
     context = {'attendance_30': attendance_30,
@@ -99,7 +105,8 @@ def character_dkp(request, character):
                'character_class': c_obj.character_class,
                'rank': c_obj.get_status_display(),
                'purchases_30': purchases_30,
-               'awards_30': awards_30}
+               'awards_14': awards_14
+               }
 
     return HttpResponse(template.render(context, request))
 
