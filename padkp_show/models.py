@@ -29,6 +29,16 @@ class Character(models.Model):
     def clean_name(self):
         return self.cleaned_data['name'].capitalize()
 
+    def attendance(self, days):
+        days_ago = dt.datetime.utcnow() - dt.timedelta(days=days)
+        raid_dumps = RaidDump.objects.filter(time__gte=days_ago).aggregate(total=Sum('attendance_value'))
+        my_raid_dumps = RaidDump.objects.filter(time__gte=days_ago).filter(
+            characters_present=self.name).aggregate(total=Sum('attendance_value'))
+        my_awards = DkpSpecialAward.objects.filter(time__gte=days_ago).filter(
+            character=self.name).aggregate(total=Sum('attendance_value'))
+        my_attendance_points = (my_raid_dumps['total'] or 0) + (my_awards['total'] or 0)
+        return 100 * float(my_attendance_points) / raid_dumps['total']
+
 
 class RaidDump(models.Model):
     """ Represents a raid dump upload. Awards dkp and optionally attendance"""
