@@ -38,7 +38,7 @@ class Character(models.Model):
             character=self.name).aggregate(total=Sum('attendance_value'))
         my_attendance_points = (my_raid_dumps['total'] or 0) + (my_awards['total'] or 0)
         return 100 * float(my_attendance_points) / raid_dumps['total']
-
+Character._meta.ordering=['name']
 
 class RaidDump(models.Model):
     """ Represents a raid dump upload. Awards dkp and optionally attendance"""

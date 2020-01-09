@@ -24,7 +24,9 @@ def index(request):
     total_extra = {x['character']: x['value'] for x in extra_awards}
 
     result = []
-    for character in Character.objects.all():
+    for character in Character.objects.all().filter(name__in=total_earned.keys()):
+        if character.status == 'INA' or character.attendance(30) == 0:
+            continue
         spent = total_spent.get(character.name, 0)
         earned = total_earned.get(character.name, 0) + total_extra.get(character.name, 0)
         result.append({'name': character.name, 'character_class': character.character_class,
@@ -45,8 +47,12 @@ def attendance_table(request):
     total_dumps = sum(dump.attendance_value for dump in RaidDump.objects.all())
 
     result = []
-    for character in Character.objects.all():
+    for character in Character.objects.all().filter(name__in=total_earned.keys()):
+        if character.status in ['INA', 'ALT']:
+            continue
         attendance = '%.1f' % (character.attendance(30))
+        if attendance == '0.0':
+            continue
 
         result.append({'name': character.name, 'character_class': character.character_class,
                        'character_status': character.get_status_display(), 'attendance': attendance})
