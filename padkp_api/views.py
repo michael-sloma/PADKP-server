@@ -62,7 +62,16 @@ class UploadRaidDump(viewsets.ViewSet):
         value = request.data['value']
         attendance_value = 1 if request.data['counts_for_attendance'] else 0
         filename = request.data['filename']
-        time = dt.datetime.strptime(filename, 'RaidRoster_mangler-%Y%m%d-%H%M%S.txt')
+
+        if 'time' in request.data:
+            time = request.data['time']
+        else:
+            # older client versions expect the server to decode the time from
+            # the dump file name. we will continue to support this for now.
+            # it does cause problems for timezone support because we don't know
+            # the local time of the client
+            time = dt.datetime.strptime(filename, 'RaidRoster_mangler-%Y%m%d-%H%M%S.txt')
+
         notes = request.data['notes']
         award_type = request.data['award_type']
 
