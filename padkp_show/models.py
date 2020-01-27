@@ -55,9 +55,10 @@ class RaidDump(models.Model):
     notes = models.TextField(default="", blank=True)
 
     def __str__(self):
-        attendance_str = '' if self.attendance_value else " (not counted for attendance)"
+        attendance_str = '' if self.attendance_value else " -- not counted for attendance"
+        notes_str = '' if not self.notes else '({}) '.format(self.notes)
         time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
-        return '{} for {} on {}{}'.format(self.value, self.award_type, time_str, attendance_str)
+        return '{} for {} {}on {} {}'.format(self.value, self.award_type, notes_str, time_str, attendance_str)
 
 
 class DkpSpecialAward(models.Model):
@@ -74,9 +75,10 @@ class DkpSpecialAward(models.Model):
     notes = models.TextField(default="", blank=True)
 
     def __str__(self):
-        attendance_str = '' if self.attendance_value else " (not counted for attendance)"
+        attendance_str = '' if self.attendance_value else " -- not counted for attendance"
+        notes_str = '' if not self.notes else '({}) '.format(self.notes)
         time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
-        return '{} to {} on {}{}'.format(self.value, self.character, time_str, attendance_str)
+        return '{} {}on {} {}'.format(self.value, notes_str, time_str, attendance_str)
 
 
 class Purchase(models.Model):

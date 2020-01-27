@@ -81,7 +81,7 @@ def character_dkp(request, character):
     present_awards_14 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] +
                                [x for x in DkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)],
                                key = lambda x: x.time, reverse=True)
-    missed_awards_14 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_14).exclude(characters_present=character)],
+    missed_awards_14 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30).exclude(characters_present=character)],
                               key = lambda x: x.time, reverse=True)
     awards_14 = [{'award': x, 'present': True} for x in present_awards_14] + \
                 [{'award': x, 'present': False} for x in missed_awards_14]
@@ -118,3 +118,7 @@ def awards(request):
 
     return HttpResponse(template.render({'records': result}, request))
 
+
+def rules(request):
+    template = loader.get_template('padkp_show/rules.html')
+    return HttpResponse(template.render())
