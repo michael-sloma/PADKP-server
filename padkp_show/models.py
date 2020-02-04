@@ -7,7 +7,7 @@ from django.db.models import Sum
 EQ_CLASSES = [
     'Warrior', 'Paladin', 'Shadow Knight',  'Beastlord', 'Berserker', 'Monk',
     'Ranger', 'Rogue', 'Magician', 'Necromancer', 'Wizard', 'Bard', 'Enchanter',
-    'Cleric', 'Druid', 'Shaman'
+    'Cleric', 'Druid', 'Shaman', 'Unknown'
 ]
 
 class Character(models.Model):
