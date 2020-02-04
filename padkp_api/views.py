@@ -56,7 +56,9 @@ class UploadRaidDump(viewsets.ViewSet):
 
     def create(self, request):
         dump_contents = request.data['dump_contents']
+        waitlist = request.get('waitlist', [])
         characters = _parse_dump(dump_contents)
+        characters += [{'name': x, 'character_class': None} for x in waitlist]
         characters_present = _get_or_create_characters(characters)
 
         value = request.data['value']
