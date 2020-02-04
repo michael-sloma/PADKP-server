@@ -49,13 +49,13 @@ class Character(models.Model):
 
     def decay_dkp(self, decay, notes, dry_run=True):
         current_dkp = self.current_dkp()
-        decay_penalty = int(decay * current_dkp)
+        decay_penalty = -int(decay * current_dkp)
         award = DkpSpecialAward(character=self,
                                 value=decay_penalty,
                                 attendance_value=0,
                                 time=dt.datetime.utcnow(),
                                 notes=notes)
-        print('{} has {} dkp, penalizing by {}'.format(self.name, current_dkp, decay_penalty))
+        print('{} has {} dkp, decaying by {}'.format(self.name, current_dkp, decay_penalty))
         if not dry_run:
             award.save()
 
@@ -71,6 +71,7 @@ class Character(models.Model):
                                     attendance_value=0,
                                     time=dt.datetime.utcnow(),
                                     notes=notes)
+            print('capping {} at {} dkp (had {})'.format(self.name, cap, current_dkp))
             if not dry_run:
                 award.save()
             return True
