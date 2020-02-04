@@ -30,7 +30,7 @@ class Character(models.Model):
         return self.cleaned_data['name'].capitalize()
 
     def attendance(self, days):
-        days_ago = dt.datetime.utcnow() - dt.timedelta(days=days)
+        days_ago = pytz.utc.localize(dt.datetime.utcnow()) - dt.timedelta(days=days)
         raid_dumps = RaidDump.objects.filter(time__gte=days_ago).aggregate(total=Sum('attendance_value'))
         my_raid_dumps = RaidDump.objects.filter(time__gte=days_ago).filter(
             characters_present=self.name).aggregate(total=Sum('attendance_value'))
@@ -38,6 +38,54 @@ class Character(models.Model):
             character=self.name).aggregate(total=Sum('attendance_value'))
         my_attendance_points = (my_raid_dumps['total'] or 0) + (my_awards['total'] or 0)
         return 100 * float(my_attendance_points) / raid_dumps['total']
+
+    def current_dkp(self):
+        dumps = RaidDump.objects.filter(characters_present=self.name).aggregate(total=Sum('value'))
+        purchases = Purchase.objects.filter(character=self.name).aggregate(total=Sum('value'))
+        extra_awards = DkpSpecialAward.objects.filter(character=self.name).aggregate(total=Sum('value'))
+
+        current_dkp = (dumps['total'] or 0)  + (extra_awards['total'] or 0)  - (purchases['total'] or 0)
+        return current_dkp
+
+    def decay_dkp(self, decay, notes, dry_run=True):
+        current_dkp = self.current_dkp()
+        decay_penalty = int(decay * current_dkp)
+        award = DkpSpecialAward(character=self,
+                                value=decay_penalty,
+                                attendance_value=0,
+                                time=dt.datetime.utcnow(),
+                                notes=notes)
+        print('{} has {} dkp, penalizing by {}'.format(self.name, current_dkp, decay_penalty))
+        if not dry_run:
+            award.save()
+
+    def cap_dkp(self, cap, notes, dry_run=True):
+        current_dkp = self.current_dkp()
+        if current_dkp <= cap:
+            return False
+        else:
+            cap_penalty = cap - current_dkp
+            assert cap_penalty < 0
+            award = DkpSpecialAward(character=self,
+                                    value=cap_penalty,
+                                    attendance_value=0,
+                                    time=dt.datetime.utcnow(),
+                                    notes=notes)
+            if not dry_run:
+                award.save()
+            return True
+
+    def give_bonus(self, bonus, notes, dry_run=True):
+        award = DkpSpecialAward(character=self,
+                                value=bonus,
+                                attendance_value=0,
+                                time=dt.datetime.utcnow(),
+                                notes=notes)
+        print('bonus of {} to {}'.format(bonus, self.name))
+        if not dry_run:
+            award.save()
+
+
 Character._meta.ordering=['name']
 
 class RaidDump(models.Model):
