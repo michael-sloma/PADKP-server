@@ -4,7 +4,7 @@ from padkp_show.models import Character, RaidDump
 from django.core.management.base import BaseCommand, CommandError
 
 class Command(BaseCommand):
-    help = 'Closes the specified poll for voting'
+    help = 'Perform planes of power decay'
 
     def add_arguments(self, parser):
         pass

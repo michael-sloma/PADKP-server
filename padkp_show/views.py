@@ -25,7 +25,7 @@ def index(request):
 
     result = []
     for character in Character.objects.all().filter(name__in=total_earned.keys()):
-        if character.status == 'INA' or character.attendance(30) == 0:
+        if character.status == 'INA' or character.inactive or character.leave_of_absence:
             continue
         spent = total_spent.get(character.name, 0)
         earned = total_earned.get(character.name, 0) + total_extra.get(character.name, 0)
@@ -49,6 +49,8 @@ def attendance_table(request):
     result = []
     for character in Character.objects.all().filter(name__in=total_earned.keys()):
         if character.status in ['INA', 'ALT']:
+            continue
+        if character.inactive or character.leave_of_absence:
             continue
         attendance = '%.1f' % (character.attendance(30))
         if attendance == '0.0':
@@ -89,11 +91,18 @@ def character_dkp(request, character):
 
     purchases_30 = [str(x) for x in Purchase.objects.filter(time__gte=days_ago_30, character=character).order_by('-time')]
 
+    if c_obj.inactive:
+        display_rank = 'Inactive'
+    elif c_obj.leave_of_absence:
+        display_rank = 'Leave of Absence'
+    else:
+        display_rank = c_obj.get_status_display()
+
     context = {'attendance_30': attendance_30,
                'current_dkp': current_dkp,
                'name': c_obj.name,
                'character_class': c_obj.character_class,
-               'rank': c_obj.get_status_display(),
+               'rank': display_rank,
                'purchases_30': purchases_30,
                'awards_14': awards_14
                }

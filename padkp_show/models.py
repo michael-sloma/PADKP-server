@@ -22,6 +22,9 @@ class Character(models.Model):
     name = models.CharField(primary_key=True, max_length=100)
     character_class = models.CharField(max_length=20, choices=[(x,x) for x in EQ_CLASSES])
     status = models.CharField(max_length=3, choices=status_choices)
+    leave_of_absence = models.BooleanField(default=False)
+    inactive = models.BooleanField(default=False)
+    date_inactive = models.DateField(null=True)
 
     def __str__(self):
         return self.name
