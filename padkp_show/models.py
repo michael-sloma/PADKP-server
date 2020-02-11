@@ -148,3 +148,42 @@ class Purchase(models.Model):
                                               self.time.strftime("%m/%d/%y"))
 
 
+def main_change(name_from, name_to):
+    char_from, = Character.objects.filter(name=name_from)
+    char_to, = Character.objects.filter(name=name_to)
+
+    char_from.status = 'ALT'
+    char_from.save()
+
+    char_to.status = 'MN'
+    char_to.inactive = char_from.inactive
+    char_to.save()
+
+    char_from_dkp = char_from.current_dkp()
+    char_to_dkp = char_to.current_dkp()
+
+    # zero out the old main
+    DkpSpecialAward(character=char_from,
+                    value=-char_from_dkp,
+                    attendance_value=0,
+                    time=dt.datetime.now(),
+                    notes='main change to {}'.format(char_to.name)
+                    ).save()
+
+    # transfer DKP to the new main
+    DkpSpecialAward(character=char_to,
+                    value=char_from_dkp - char_to_dkp,
+                    attendance_value=0,
+                    time=dt.datetime.now(),
+                    notes='main change from {}'.format(char_from.name)
+                    ).save()
+
+    # transfer attendance for last 30 days
+    for dump in RaidDump.objects.filter(characters_present=char_from):
+        DkpSpecialAward(character=char_to,
+                        value=0,
+                        attendance_value=dump.attendance_value,
+                        time=dump.time,
+                        notes='transfer attendance from {}'.format(char_from.name)
+                        ).save()
+
