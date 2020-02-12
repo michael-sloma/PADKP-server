@@ -1,9 +1,12 @@
 from django.contrib import admin
 from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
+from django.contrib.admin.widgets import AdminSplitDateTime
 
 from .models import Character, Purchase, RaidDump, DkpSpecialAward, main_change
 from rest_framework.authtoken.models import Token
+
+from pytz import timezone
 
 
 class PaDkpShowAdminSite(admin.AdminSite):
@@ -32,9 +35,24 @@ class MainChangeForm(forms.Form):
     main_change_to = forms.CharField(max_length=100)
 
 class CharacterForm(forms.ModelForm):
-    class Metal:
+    class Meta:
+        exclude = []
         model = Character
+
     main_change = forms.ModelChoiceField(Character.objects.filter(status='ALT'), required=False)
+    add_to_dumps_starting = forms.SplitDateTimeField(widget=AdminSplitDateTime, required=False)
+    add_to_dumps_ending = forms.SplitDateTimeField(widget=AdminSplitDateTime, required=False)
+
+    def clean(self):
+        super(CharacterForm, self).clean()
+        # This method will set the `cleaned_data` attribute
+
+        start = self.cleaned_data.get('add_to_dumps_starting')
+        end = self.cleaned_data.get('add_to_dumps_ending')
+        if (start and not end) or (end and not start):
+            raise forms.ValidationError('Must provide a both a start and end time to add character to dumps')
+
+
 
 
 class CharacterAdmin(admin.ModelAdmin):
@@ -50,6 +68,14 @@ class CharacterAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if form.cleaned_data['main_change'] is not None:
             main_change(obj.name, form.cleaned_data['main_change'].name)
+        add_start = form.cleaned_data['add_to_dumps_starting'].replace(tzinfo=timezone('US/Eastern'))
+        add_end = form.cleaned_data['add_to_dumps_ending'].replace(tzinfo=timezone('US/Eastern'))
+        if add_start and add_end:
+            dumps = RaidDump.objects.filter(time__gte=add_start, time__lte=add_end)
+            for dump in dumps:
+                dump.characters_present.add(obj)
+        print("DATA", form.cleaned_data)
+
 
 admin_site.register(Character, CharacterAdmin)
 
