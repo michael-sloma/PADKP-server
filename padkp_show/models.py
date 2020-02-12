@@ -24,7 +24,7 @@ class Character(models.Model):
     status = models.CharField(max_length=3, choices=status_choices)
     leave_of_absence = models.BooleanField(default=False)
     inactive = models.BooleanField(default=False)
-    date_inactive = models.DateField(null=True)
+    date_inactive = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -149,6 +149,7 @@ class Purchase(models.Model):
 
 
 def main_change(name_from, name_to):
+    print('main changing {} to {}'.format(name_from, name_to))
     char_from, = Character.objects.filter(name=name_from)
     char_to, = Character.objects.filter(name=name_to)
 
