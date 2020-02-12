@@ -179,7 +179,7 @@ def main_change(name_from, name_to):
                     ).save()
 
     # transfer attendance for last 30 days
-    for dump in RaidDump.objects.filter(characters_present=char_from):
+    for dump in RaidDump.objects.filter(characters_present=char_from).exclude(characters_present=char_to):
         DkpSpecialAward(character=char_to,
                         value=0,
                         attendance_value=dump.attendance_value,
