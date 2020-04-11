@@ -144,33 +144,34 @@ def class_balance_table(request):
     name_class_map = {c.name: c.character_class for c in Character.objects.all()}
 
     counts = {character_class: 0 for character_class in name_class_map.values()}
+    n_dumps = 0
 
 
-    dumps = RaidDump.objects.values('characters_present').annotate(attendance_value=Sum('attendance_value'))
-    total_earned = {x['characters_present']: x['attendance_value'] for x in dumps}
+    for dump in RaidDump.objects.filter(time__gte=days_ago_30):
+        n_dumps += 1
+        for character in dump.characters_present.all():
+            counts[character.character_class] += 1
+    class_counts_30 = {}
+    for character_class, count in counts.items():
+        class_counts_30[character_class] = '%.1f' % (float(count) / n_dumps)
 
-    extra_awards = DkpSpecialAward.objects.values('character').annotate(attendance_value=Sum('attendance_value'))
-    total_extra = {x['character']: x['attendance_value'] for x in extra_awards}
 
-    total_dumps = sum(dump.attendance_value for dump in RaidDump.objects.all())
+    for dump in RaidDump.objects.filter(time__gte=days_ago_90):
+        n_dumps += 1
+        for character in dump.characters_present.all():
+            counts[character.character_class] += 1
+    class_counts_90 = {}
+    for character_class, count in counts.items():
+        class_counts_90[character_class] = '%.1f' % (float(count) / n_dumps)
 
     result = []
-    for character in Character.objects.all().filter(name__in=total_earned.keys()):
-        if character.status in ['INA', 'ALT']:
-            continue
-        if character.inactive or character.leave_of_absence:
-            continue
-        attendance = '%.1f' % (character.attendance(30))
-        if attendance == '0.0':
-            continue
-        attendance_90 = '%.1f' % (character.attendance(90))
+    for character_class in counts:
+        if character_class in ['Shadow', 'Unknown']: continue
+        result.append({'character_class': character_class,
+                       'counts_30': class_counts_30[character_class],
+                       'counts_90': class_counts_90[character_class]}
+                      )
+    result = sorted(result, key=lambda record: record['character_class'])
 
-        result.append({'name': character.name, 'character_class': character.character_class,
-                       'character_status': character.get_status_display(),
-                       'attendance': attendance,
-                       'attendance_90': attendance_90})
-    result = sorted(result, key=lambda x: float(x['attendance']), reverse=True)
-
-    extra = {'total_dumps': total_dumps, 'total_earned': total_earned, 'total_extra': total_extra}
-    return HttpResponse(template.render({'records': result, 'extra': extra}, request))
+    return HttpResponse(template.render({'records': result}, request))
 
