@@ -57,6 +57,7 @@ class CharacterForm(forms.ModelForm):
 
 class CharacterAdmin(admin.ModelAdmin):
     form = CharacterForm
+    list_per_page = 1000
 
     def main_change(self, request, queryset):
         selected = queryset.values_list('pk', flat=True)
@@ -68,8 +69,8 @@ class CharacterAdmin(admin.ModelAdmin):
         super().save_model(request, obj, form, change)
         if form.cleaned_data['main_change'] is not None:
             main_change(obj.name, form.cleaned_data['main_change'].name)
-        add_start = form.cleaned_data['add_to_dumps_starting'].replace(tzinfo=timezone('US/Eastern'))
-        add_end = form.cleaned_data['add_to_dumps_ending'].replace(tzinfo=timezone('US/Eastern'))
+        add_start = form.cleaned_data['add_to_dumps_starting']
+        add_end = form.cleaned_data['add_to_dumps_ending']
         if add_start and add_end:
             dumps = RaidDump.objects.filter(time__gte=add_start, time__lte=add_end)
             for dump in dumps:

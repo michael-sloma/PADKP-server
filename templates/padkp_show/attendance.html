@@ -1,3 +1,5 @@
+<meta name="google" content="notranslate" />
+
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <div class="navbar-header">
@@ -32,6 +34,7 @@ $(function(){
     <th>Class</th>
     <th>Status</th>
     <th>Attendance (30 days)</th>
+    <th>Attendance (90 days)</th>
   </tr>
 </thead> 
 <tbody>
@@ -41,6 +44,7 @@ $(function(){
   <td>{{record.character_class}}</td>
   <td>{{record.character_status}}</td>
   <td>{{record.attendance}}</td>
+  <td>{{record.attendance_90}}</td>
 {% endfor %}
 </tbody>
 </table>

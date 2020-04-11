@@ -55,9 +55,12 @@ def attendance_table(request):
         attendance = '%.1f' % (character.attendance(30))
         if attendance == '0.0':
             continue
+        attendance_90 = '%.1f' % (character.attendance(90))
 
         result.append({'name': character.name, 'character_class': character.character_class,
-                       'character_status': character.get_status_display(), 'attendance': attendance})
+                       'character_status': character.get_status_display(),
+                       'attendance': attendance,
+                       'attendance_90': attendance_90})
     result = sorted(result, key=lambda x: float(x['attendance']), reverse=True)
 
     extra = {'total_dumps': total_dumps, 'total_earned': total_earned, 'total_extra': total_extra}

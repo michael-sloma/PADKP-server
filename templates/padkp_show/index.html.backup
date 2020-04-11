@@ -1,0 +1,17 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+
+<table class="table">
+  <tr>
+    <th>Character</th>
+    <th>Class</th>
+    <th>Status</th>
+    <th>Current DKP</th>
+  </tr>
+ 
+{% for record in records %}
+<tr>
+  <td><a href="/{{record.name}}">{{record.name}}</a></td>
+  <td>{{record.character_class}}</td>
+  <td>{{record.character_status}}</td>
+  <td>{{record.current_dkp}}</td>
+{% endfor %}
