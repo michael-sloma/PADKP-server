@@ -134,3 +134,43 @@ def awards(request):
 def rules(request):
     template = loader.get_template('padkp_show/rules.html')
     return HttpResponse(template.render())
+
+
+def class_balance_table(request):
+    template = loader.get_template('padkp_show/classes.html')
+    days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
+    days_ago_90 = dt.datetime.utcnow() - dt.timedelta(days=90)
+
+    name_class_map = {c.name: c.character_class for c in Character.objects.all()}
+
+    counts = {character_class: 0 for character_class in name_class_map.values()}
+
+
+    dumps = RaidDump.objects.values('characters_present').annotate(attendance_value=Sum('attendance_value'))
+    total_earned = {x['characters_present']: x['attendance_value'] for x in dumps}
+
+    extra_awards = DkpSpecialAward.objects.values('character').annotate(attendance_value=Sum('attendance_value'))
+    total_extra = {x['character']: x['attendance_value'] for x in extra_awards}
+
+    total_dumps = sum(dump.attendance_value for dump in RaidDump.objects.all())
+
+    result = []
+    for character in Character.objects.all().filter(name__in=total_earned.keys()):
+        if character.status in ['INA', 'ALT']:
+            continue
+        if character.inactive or character.leave_of_absence:
+            continue
+        attendance = '%.1f' % (character.attendance(30))
+        if attendance == '0.0':
+            continue
+        attendance_90 = '%.1f' % (character.attendance(90))
+
+        result.append({'name': character.name, 'character_class': character.character_class,
+                       'character_status': character.get_status_display(),
+                       'attendance': attendance,
+                       'attendance_90': attendance_90})
+    result = sorted(result, key=lambda x: float(x['attendance']), reverse=True)
+
+    extra = {'total_dumps': total_dumps, 'total_earned': total_earned, 'total_extra': total_extra}
+    return HttpResponse(template.render({'records': result, 'extra': extra}, request))
+
