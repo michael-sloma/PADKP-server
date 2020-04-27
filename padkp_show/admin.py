@@ -3,7 +3,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django import forms
 from django.contrib.admin.widgets import AdminSplitDateTime
 
+from django.contrib.auth.models import User
 from .models import Character, Purchase, RaidDump, DkpSpecialAward, main_change
+from .models import CasualCharacter, CasualDkpSpecialAward, CasualPurchase, CasualRaidDump
 from rest_framework.authtoken.models import Token
 
 from pytz import timezone
@@ -25,10 +27,17 @@ class PaDkpShowAdminSite(admin.AdminSite):
 
 admin_site = PaDkpShowAdminSite(name='padkp_show_admin')
 
+admin_site.register(User)
+
 admin_site.register(Purchase)
 admin_site.register(RaidDump)
 admin_site.register(DkpSpecialAward)
 admin_site.register(Token)
+
+admin_site.register(CasualPurchase)
+admin_site.register(CasualRaidDump)
+admin_site.register(CasualCharacter)
+admin_site.register(CasualDkpSpecialAward)
 
 
 class MainChangeForm(forms.Form):

@@ -8,6 +8,7 @@ from rest_framework import viewsets, routers
 
 from django.db.models import Sum
 from .models import Purchase, Character, RaidDump, DkpSpecialAward
+from .models import CasualPurchase, CasualCharacter, CasualRaidDump, CasualDkpSpecialAward
 
 
 def index(request):
@@ -175,3 +176,61 @@ def class_balance_table(request):
 
     return HttpResponse(template.render({'records': result}, request))
 
+
+def casual_index(request):
+    template = loader.get_template('padkp_show/casual_index.html')
+
+    dumps = CasualRaidDump.objects.values('characters_present').annotate(value=Sum('value'))
+    total_earned = {x['characters_present']: x['value'] for x in dumps}
+    print(total_earned)
+
+    purchases = CasualPurchase.objects.values('character').annotate(value=Sum('value'))
+    total_spent = {x['character']: x['value'] for x in purchases}
+    print(total_spent)
+    extra_awards = CasualDkpSpecialAward.objects.values('character').annotate(value=Sum('value'))
+    total_extra = {x['character']: x['value'] for x in extra_awards}
+
+    result = []
+    for character in CasualCharacter.objects.all().filter(name__in=total_earned.keys()):
+        spent = total_spent.get(character.name, 0)
+        earned = total_earned.get(character.name, 0) + total_extra.get(character.name, 0)
+        result.append({'name': character.name,
+                       'character_class': character.character_class,
+                       'current_dkp': earned - spent})
+    result = sorted(result, key=lambda x: x['name'])
+    return HttpResponse(template.render({'records': result}, request))
+
+
+def casual_character_dkp(request, character):
+    template = loader.get_template('padkp_show/casual_character_page.html')
+    character = character.capitalize()
+    c_obj = CasualCharacter.objects.get(name=character)
+    dumps = CasualRaidDump.objects.filter(characters_present=character).aggregate(total=Sum('value'))
+    purchases = CasualPurchase.objects.filter(character=character).aggregate(total=Sum('value'))
+    extra_awards = CasualDkpSpecialAward.objects.filter(character=character).aggregate(total=Sum('value'))
+
+    current_dkp = (dumps['total'] or 0) \
+                  + (extra_awards['total'] or 0) \
+                  - (purchases['total'] or 0)
+
+    days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
+    present_awards_30 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] +
+                               [x for x in DkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)],
+                               key = lambda x: x.time, reverse=True)
+    missed_awards_30 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30).exclude(characters_present=character)],
+                              key = lambda x: x.time, reverse=True)
+    awards_30 = [{'award': x, 'present': True} for x in present_awards_30] + \
+                [{'award': x, 'present': False} for x in missed_awards_30]
+    awards_30 = sorted(awards_30, key=lambda x: x['award'].time, reverse=True)
+
+    purchases_30 = [str(x) for x in Purchase.objects.filter(time__gte=days_ago_30, character=character).order_by('-time')]
+
+    context = {
+               'current_dkp': current_dkp,
+               'name': c_obj.name,
+               'character_class': c_obj.character_class,
+               'purchases_30': purchases_30,
+               'awards_30': awards_30
+               }
+
+    return HttpResponse(template.render(context, request))

@@ -16,8 +16,9 @@ class Character(models.Model):
     ALT = 'ALT'
     RECRUIT = 'REC'
     INACTIVE = 'INA'
+    FNF = 'FNF'
     status_choices = [(MAIN, 'Main'), (ALT, 'Alt'), (RECRUIT, 'Recruit'),
-                      (INACTIVE, 'Inactive')]
+                      (INACTIVE, 'Inactive'), (FNF, 'FNF')]
 
     name = models.CharField(primary_key=True, max_length=100)
     character_class = models.CharField(max_length=20, choices=[(x,x) for x in EQ_CLASSES])
@@ -188,3 +189,76 @@ def main_change(name_from, name_to):
                         notes='transfer attendance from {}'.format(char_from.name)
                         ).save()
 
+
+class CasualCharacter(models.Model):
+    """ Represents a member """
+    name = models.CharField(primary_key=True, max_length=100)
+    character_class = models.CharField(max_length=20, choices=[(x,x) for x in EQ_CLASSES])
+
+    def __str__(self):
+        return self.name
+
+    def clean_name(self):
+        return self.cleaned_data['name'].capitalize()
+
+    def current_dkp(self):
+        dumps = CasualRaidDump.objects.filter(characters_present=self.name).aggregate(total=Sum('value'))
+        purchases = CasualPurchase.objects.filter(character=self.name).aggregate(total=Sum('value'))
+        extra_awards = CasualDkpSpecialAward.objects.filter(character=self.name).aggregate(total=Sum('value'))
+
+        current_dkp = (dumps['total'] or 0)  + (extra_awards['total'] or 0)  - (purchases['total'] or 0)
+        return current_dkp
+
+
+CasualCharacter._meta.ordering=['name']
+
+
+class CasualRaidDump(models.Model):
+    """ Represents a raid dump upload. Awards dkp and optionally attendance"""
+    value = models.IntegerField()
+    attendance_value = models.IntegerField()
+    time = models.DateTimeField()
+    characters_present = models.ManyToManyField(CasualCharacter, related_name='raid_dumps')
+    filename = models.CharField(max_length=50)
+
+    notes = models.TextField(default="", blank=True)
+
+    def __str__(self):
+        notes_str = '' if not self.notes else '({}) '.format(self.notes)
+        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
+        return '{} on {} -- {}'.format(self.value, time_str, notes_str)
+
+
+class CasualDkpSpecialAward(models.Model):
+    """ represents a character being awarded dkp or attendance that is not attached
+    to a raid dump.
+
+    intended purpose is for dkp bonuses and decays. could also be used for quick
+    and dirty fixes to dkp entry errors
+    """
+    character = models.ForeignKey(CasualCharacter, on_delete=models.CASCADE)
+    value = models.IntegerField()
+    attendance_value = models.IntegerField()
+    time = models.DateTimeField(default=dt.datetime.utcnow, blank=True)
+    notes = models.TextField(default="", blank=True)
+
+    def __str__(self):
+        attendance_str = '' if self.attendance_value else " -- not counted for attendance"
+        notes_str = '' if not self.notes else '({}) '.format(self.notes)
+        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
+        return '{} {}on {} {}'.format(self.value, notes_str, time_str, attendance_str)
+
+
+class CasualPurchase(models.Model):
+    """ Represents a character spending DKP for an item"""
+    character = models.ForeignKey(CasualCharacter, on_delete=models.CASCADE)
+    item_name = models.CharField(max_length=200)
+    value = models.IntegerField()
+    time = models.DateTimeField(default=dt.datetime.utcnow)
+    notes = models.TextField(default="", blank=True)
+
+    def __str__(self):
+        return "{} to {} for {} on {}".format(self.item_name,
+                                              self.character,
+                                              self.value,
+                                              self.time.strftime("%m/%d/%y"))

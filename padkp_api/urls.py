@@ -6,6 +6,7 @@ router = routers.DefaultRouter()
 router.register(r'characters', views.CharacterViewSet)
 router.register(r'awards', views.DkpSpecialAwardViewSet)
 router.register(r'upload_dump', views.UploadRaidDump)
+router.register(r'upload_casual_dump', views.UploadCasualRaidDump)
 router.register(r'charge_dkp', views.ChargeDKP)
 
 # Wire up our API using automatic URL routing.

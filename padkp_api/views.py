@@ -29,7 +29,7 @@ def _parse_dump(dump_contents):
     return result
 
 
-def _get_or_create_characters(chars):
+def _get_or_create_characters(chars, create=True):
     char_names = [char['name'] for char in chars]
     char_obj = models.Character.objects.filter(name__in=char_names)
     char_index = {c_obj.name: c_obj for c_obj in char_obj}
@@ -38,7 +38,7 @@ def _get_or_create_characters(chars):
     for char in chars:
         if char['name'] in char_index:
             result.append(char_index[char['name']])
-        else:
+        elif create:
             new_char = models.Character(name=char['name'],
                                         character_class=char['character_class'],
                                         status='Recruit')
@@ -83,6 +83,38 @@ class UploadRaidDump(viewsets.ViewSet):
         dump.characters_present.set(characters_present)
         return Response('Raid dump upload successful', status=status.HTTP_201_CREATED)
 
+
+class UploadCasualRaidDump(viewsets.ViewSet):
+    """ upload a raid dump file and award dkp """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = models.RaidDump.objects.all()
+
+    def create(self, request):
+        dump_contents = request.data['dump_contents']
+        waitlist = request.data.get('waitlist', [])
+        characters = [c['name'] for c in _parse_dump(dump_contents)]
+        characters += waitlist
+        characters_present = models.CasualCharacter.objects.filter(name__in=characters)
+
+        value = request.data['value']
+        filename = request.data['filename']
+
+        if 'time' in request.data:
+            time = request.data['time']
+        else:
+            # older client versions expect the server to decode the time from
+            # the dump file name. we will continue to support this for now.
+            # it does cause problems for timezone support because we don't know
+            # the local time of the client
+            time = dt.datetime.strptime(filename, 'RaidRoster_mangler-%Y%m%d-%H%M%S.txt')
+
+        notes = request.data['notes']
+
+        dump = models.CasualRaidDump(value=value, filename=filename, time=time, notes=notes)
+        dump.save()
+        dump.characters_present.set(characters_present)
+        return Response('Raid dump upload successful', status=status.HTTP_201_CREATED)
 
 
 class ChargeDKP(viewsets.ViewSet):
