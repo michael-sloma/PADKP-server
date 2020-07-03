@@ -216,7 +216,6 @@ CasualCharacter._meta.ordering=['name']
 class CasualRaidDump(models.Model):
     """ Represents a raid dump upload. Awards dkp and optionally attendance"""
     value = models.IntegerField()
-    attendance_value = models.IntegerField()
     time = models.DateTimeField()
     characters_present = models.ManyToManyField(CasualCharacter, related_name='raid_dumps')
     filename = models.CharField(max_length=50)
@@ -238,12 +237,11 @@ class CasualDkpSpecialAward(models.Model):
     """
     character = models.ForeignKey(CasualCharacter, on_delete=models.CASCADE)
     value = models.IntegerField()
-    attendance_value = models.IntegerField()
     time = models.DateTimeField(default=dt.datetime.utcnow, blank=True)
     notes = models.TextField(default="", blank=True)
 
     def __str__(self):
-        attendance_str = '' if self.attendance_value else " -- not counted for attendance"
+        attendance_str = ''
         notes_str = '' if not self.notes else '({}) '.format(self.notes)
         time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
         return '{} {}on {} {}'.format(self.value, notes_str, time_str, attendance_str)

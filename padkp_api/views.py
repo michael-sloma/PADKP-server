@@ -60,6 +60,7 @@ class UploadRaidDump(viewsets.ViewSet):
         characters = _parse_dump(dump_contents)
         characters += [{'name': x, 'character_class': 'Unknown'} for x in waitlist]
         characters_present = _get_or_create_characters(characters)
+        characters_present = [c for c in characters_present if c.status != 'ALT']
 
         value = request.data['value']
         attendance_value = 1 if request.data['counts_for_attendance'] else 0
@@ -148,3 +149,29 @@ class CharacterViewSet(viewsets.ModelViewSet):
 class DkpSpecialAwardViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.DkpSpecialAwardSerializer
     queryset = models.DkpSpecialAward.objects.all()
+
+
+class AuctionViewSet(viewsets.Viewset):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = models.RaidDump.objects.all()
+
+    def list(self, request):
+        names = request.data['characters']
+        characters = models.Character.objects.filter(name__in=names)
+        result = tiebreak(characters)
+        return Response(
+
+
+def tiebreak(characters):
+    def ordering(character):
+        return character.current_dkp(), character.attendance(30)
+
+    orderings = {character.name: ordering(character) for character in characters}
+
+    def explain(name):
+        dkp, attendance = orderings(name)
+        return "{} has {} DKP and {} 30-day attendance".format(name, dkp, attendance)
+
+    winners = sorted([c.name for c in characters], key=lambda c: orderings[c.name], reverse=True)
+    return [(c, explain(c)) for c in winners]

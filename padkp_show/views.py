@@ -1,6 +1,6 @@
 import datetime as dt
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse
 from django.template import loader
 
@@ -134,7 +134,8 @@ def awards(request):
 
 def rules(request):
     template = loader.get_template('padkp_show/rules.html')
-    return HttpResponse(template.render())
+    return redirect('https://docs.google.com/document/d/1vurUQnacpTyWOwZdR_q09RW2rLAuTO04FULbPfmjiY0')
+    #return HttpResponse(template.render())
 
 
 def class_balance_table(request):
@@ -151,7 +152,8 @@ def class_balance_table(request):
     for dump in RaidDump.objects.filter(time__gte=days_ago_30):
         n_dumps += 1
         for character in dump.characters_present.all():
-            counts[character.character_class] += 1
+            if character.status == 'MN':
+                counts[character.character_class] += 1
     class_counts_30 = {}
     for character_class, count in counts.items():
         class_counts_30[character_class] = '%.1f' % (float(count) / n_dumps)
@@ -160,7 +162,8 @@ def class_balance_table(request):
     for dump in RaidDump.objects.filter(time__gte=days_ago_90):
         n_dumps += 1
         for character in dump.characters_present.all():
-            counts[character.character_class] += 1
+            if character.status == 'MN':
+                counts[character.character_class] += 1
     class_counts_90 = {}
     for character_class, count in counts.items():
         class_counts_90[character_class] = '%.1f' % (float(count) / n_dumps)
@@ -173,8 +176,10 @@ def class_balance_table(request):
                        'counts_90': class_counts_90[character_class]}
                       )
     result = sorted(result, key=lambda record: record['character_class'])
+    totals = {'total_30': sum(float(x['counts_30']) for x in result),
+              'total_90': sum(float(x['counts_90']) for x in result)}
 
-    return HttpResponse(template.render({'records': result}, request))
+    return HttpResponse(template.render({'records': result, 'totals': totals}, request))
 
 
 def casual_index(request):
@@ -191,7 +196,7 @@ def casual_index(request):
     total_extra = {x['character']: x['value'] for x in extra_awards}
 
     result = []
-    for character in CasualCharacter.objects.all().filter(name__in=total_earned.keys()):
+    for character in CasualCharacter.objects.all():
         spent = total_spent.get(character.name, 0)
         earned = total_earned.get(character.name, 0) + total_extra.get(character.name, 0)
         result.append({'name': character.name,
@@ -214,16 +219,16 @@ def casual_character_dkp(request, character):
                   - (purchases['total'] or 0)
 
     days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
-    present_awards_30 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] +
-                               [x for x in DkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)],
+    present_awards_30 = sorted([x for x in CasualRaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] +
+                               [x for x in CasualDkpSpecialAward.objects.filter(time__gte=days_ago_30, character=character)],
                                key = lambda x: x.time, reverse=True)
-    missed_awards_30 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30).exclude(characters_present=character)],
+    missed_awards_30 = sorted([x for x in CasualRaidDump.objects.filter(time__gte=days_ago_30).exclude(characters_present=character)],
                               key = lambda x: x.time, reverse=True)
     awards_30 = [{'award': x, 'present': True} for x in present_awards_30] + \
                 [{'award': x, 'present': False} for x in missed_awards_30]
     awards_30 = sorted(awards_30, key=lambda x: x['award'].time, reverse=True)
 
-    purchases_30 = [str(x) for x in Purchase.objects.filter(time__gte=days_ago_30, character=character).order_by('-time')]
+    purchases_30 = [str(x) for x in CasualPurchase.objects.filter(time__gte=days_ago_30, character=character).order_by('-time')]
 
     context = {
                'current_dkp': current_dkp,
