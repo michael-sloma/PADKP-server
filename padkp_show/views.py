@@ -9,6 +9,7 @@ from rest_framework import viewsets, routers
 from django.db.models import Sum
 from .models import Purchase, Character, RaidDump, DkpSpecialAward
 from .models import CasualPurchase, CasualCharacter, CasualRaidDump, CasualDkpSpecialAward
+from .models import DON_RELEASE
 
 
 def index(request):
@@ -20,13 +21,19 @@ def index(request):
 
     purchases = Purchase.objects.values('character').annotate(value=Sum('value'))
     total_spent = {x['character']: x['value'] for x in purchases}
-    print(total_spent)
     extra_awards = DkpSpecialAward.objects.values('character').annotate(value=Sum('value'))
     total_extra = {x['character']: x['value'] for x in extra_awards}
 
+    alt_dumps = RaidDump.objects.filter(time__gte=DON_RELEASE).values('characters_present').annotate(value=Sum('value'))
+    alt_total_earned = {x['characters_present']: x['value'] for x in dumps}
+    alt_purchases = Purchase.objects.filter(is_alt=True).values('character').annotate(value=Sum('value'))
+    alt_total_spent = {x['character']: x['value'] for x in purchases}
+    alt_extra_awards = DkpSpecialAward.objects.filter(time__gte=DON_RELEASE).values('character').annotate(value=Sum('value'))
+    alt_total_extra = {x['character']: x['value'] for x in extra_awards}
+
     result = []
     for character in Character.objects.all().filter(name__in=total_earned.keys()):
-        if character.status == 'INA' or character.inactive or character.leave_of_absence:
+        if character.status in ('INA', 'ALT') or character.inactive or character.leave_of_absence:
             continue
         spent = total_spent.get(character.name, 0)
         earned = total_earned.get(character.name, 0) + total_extra.get(character.name, 0)
@@ -76,10 +83,8 @@ def character_dkp(request, character):
     purchases = Purchase.objects.filter(character=character).aggregate(total=Sum('value'))
     extra_awards = DkpSpecialAward.objects.filter(character=character).aggregate(total=Sum('value'))
 
-    current_dkp = (dumps['total'] or 0) \
-                  + (extra_awards['total'] or 0) \
-                  - (purchases['total'] or 0)
-
+    current_dkp = c_obj.current_dkp()
+    alt_dkp = c_obj.current_alt_dkp()
     attendance_30 = '%.1f' % (c_obj.attendance(30))
 
     days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
@@ -104,6 +109,7 @@ def character_dkp(request, character):
 
     context = {'attendance_30': attendance_30,
                'current_dkp': current_dkp,
+               'alt_dkp': alt_dkp,
                'name': c_obj.name,
                'character_class': c_obj.character_class,
                'rank': display_rank,
@@ -117,10 +123,20 @@ def character_dkp(request, character):
 def items(request):
     template = loader.get_template('padkp_show/items.html')
 
+    months_ago_3 = dt.datetime.utcnow() - dt.timedelta(days=90)
+    purchases = Purchase.objects.filter(time__gt=months_ago_3).order_by('-time')
+    result = list(purchases)
+
+    return HttpResponse(template.render({'records': result, 'show_all_link': True}, request))
+
+
+def all_items(request):
+    template = loader.get_template('padkp_show/items.html')
+
     purchases = Purchase.objects.all().order_by('-time')
     result = list(purchases)
 
-    return HttpResponse(template.render({'records': result}, request))
+    return HttpResponse(template.render({'records': result, 'show_all_link': False}, request))
 
 
 def awards(request):

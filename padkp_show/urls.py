@@ -11,6 +11,7 @@ urlpatterns = [
     path('class_balance/', views.class_balance_table, name='class_balance'),
     path('awards/', views.awards, name='awards'),
     path('items/', views.items, name='items'),
+    path('all_items/', views.all_items, name='items'),
     path('rules/', views.rules, name='rules'),
     path('<slug:character>/', views.character_dkp, name='dkp'),
 ]

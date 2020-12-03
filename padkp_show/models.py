@@ -4,6 +4,8 @@ import pytz
 from django.db import models
 from django.db.models import Sum
 
+DON_RELEASE = dt.datetime(year=2020, month=11, day=16)
+
 EQ_CLASSES = [
     'Warrior', 'Paladin', 'Shadow Knight',  'Beastlord', 'Berserker', 'Monk',
     'Ranger', 'Rogue', 'Magician', 'Necromancer', 'Wizard', 'Bard', 'Enchanter',
@@ -45,8 +47,16 @@ class Character(models.Model):
 
     def current_dkp(self):
         dumps = RaidDump.objects.filter(characters_present=self.name).aggregate(total=Sum('value'))
-        purchases = Purchase.objects.filter(character=self.name).aggregate(total=Sum('value'))
+        purchases = Purchase.objects.filter(is_alt=False, character=self.name).aggregate(total=Sum('value'))
         extra_awards = DkpSpecialAward.objects.filter(character=self.name).aggregate(total=Sum('value'))
+
+        current_dkp = (dumps['total'] or 0)  + (extra_awards['total'] or 0)  - (purchases['total'] or 0)
+        return current_dkp
+
+    def current_alt_dkp(self):
+        dumps = RaidDump.objects.filter(time__gte=DON_RELEASE, characters_present=self.name).aggregate(total=Sum('value'))
+        purchases = Purchase.objects.filter(character=self.name, is_alt=True).aggregate(total=Sum('value'))
+        extra_awards = DkpSpecialAward.objects.filter(time__gte=DON_RELEASE, character=self.name).aggregate(total=Sum('value'))
 
         current_dkp = (dumps['total'] or 0)  + (extra_awards['total'] or 0)  - (purchases['total'] or 0)
         return current_dkp
@@ -141,10 +151,14 @@ class Purchase(models.Model):
     value = models.IntegerField()
     time = models.DateTimeField(default=dt.datetime.utcnow)
     notes = models.TextField(default="", blank=True)
+    is_alt = models.BooleanField(default=False, null=True)
+
+    def character_display(self):
+        return self.character.name+"'s alt" if self.is_alt else self.character.name
 
     def __str__(self):
         return "{} to {} for {} on {}".format(self.item_name,
-                                              self.character,
+                                              self.character_display(),
                                               self.value,
                                               self.time.strftime("%m/%d/%y"))
 
@@ -162,7 +176,6 @@ def main_change(name_from, name_to):
     char_to.save()
 
     char_from_dkp = char_from.current_dkp()
-    char_to_dkp = char_to.current_dkp()
 
     # zero out the old main
     DkpSpecialAward(character=char_from,
@@ -174,7 +187,7 @@ def main_change(name_from, name_to):
 
     # transfer DKP to the new main
     DkpSpecialAward(character=char_to,
-                    value=char_from_dkp - char_to_dkp,
+                    value=char_from_dkp,
                     attendance_value=0,
                     time=dt.datetime.now(),
                     notes='main change from {}'.format(char_from.name)

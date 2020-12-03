@@ -10,6 +10,7 @@ class Command(BaseCommand):
         pass
 
     def handle(self, *args, **options):
+        print('running set_inactive script')
 
         days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
         characters_raided_last_30_q = RaidDump.objects.filter(time__gte=days_ago_30).values('characters_present')
@@ -27,3 +28,4 @@ class Command(BaseCommand):
                              'Capped DKP at 50 because character went inactive on {} and was still inactive on {}'.format(char.date_inactive, today),
                              dry_run=False)
 
+        print('set_inactive script complete')

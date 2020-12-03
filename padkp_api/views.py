@@ -2,13 +2,14 @@
 API used by the desktop auction manager client to charge and award DKP
 """
 import datetime as dt
+import random
 
 from django.core.exceptions import ObjectDoesNotExist
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import TokenAuthentication, BasicAuthentication, SessionAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
@@ -120,7 +121,7 @@ class UploadCasualRaidDump(viewsets.ViewSet):
 
 class ChargeDKP(viewsets.ViewSet):
     """ Charge DKP for an item """
-    authentication_classes = [TokenAuthentication]
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = models.Purchase.objects.all()
 
@@ -136,7 +137,8 @@ class ChargeDKP(viewsets.ViewSet):
             item_name=request.data['item_name'],
             value=request.data['value'],
             time=request.data['time'],
-            notes=request.data['notes']
+            notes=request.data['notes'],
+            is_alt=request.data['is_alt'],
         ).save()
         return Response('DKP charge successful', status=status.HTTP_201_CREATED)
 
@@ -151,16 +153,16 @@ class DkpSpecialAwardViewSet(viewsets.ModelViewSet):
     queryset = models.DkpSpecialAward.objects.all()
 
 
-class AuctionViewSet(viewsets.Viewset):
-    authentication_classes = [TokenAuthentication]
+class Tiebreak(viewsets.ViewSet):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
-    queryset = models.RaidDump.objects.all()
+    queryset = models.Character.objects.all()
 
-    def list(self, request):
-        names = request.data['characters']
+    def create(self, request):
+        names = request.data.get('characters', [])
         characters = models.Character.objects.filter(name__in=names)
         result = tiebreak(characters)
-        return Response(
+        return Response(result, status=status.HTTP_200_OK)
 
 
 def tiebreak(characters):
@@ -170,8 +172,21 @@ def tiebreak(characters):
     orderings = {character.name: ordering(character) for character in characters}
 
     def explain(name):
-        dkp, attendance = orderings(name)
-        return "{} has {} DKP and {} 30-day attendance".format(name, dkp, attendance)
+        dkp, attendance = orderings[name]
+        return "{} has {} DKP and {} 30-day attendance".format(name, dkp, '%.2f'%attendance)
+    names = [c.name for c in characters]
+    random.shuffle(names) # shuffle so unbreakable ties are decided at random
+    winners = sorted(names, key=lambda name: orderings[name], reverse=True)
+    return [(name, explain(name)) for name in winners]
 
-    winners = sorted([c.name for c in characters], key=lambda c: orderings[c.name], reverse=True)
-    return [(c, explain(c)) for c in winners]
+
+class SecondClassCitizens(viewsets.ViewSet):
+    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = models.Character.objects.all()
+
+    def list(self, request):
+        queryset = models.Character.objects.filter(inactive=True) | \
+                   models.Character.objects.filter(status__in=['ALT', 'INA', 'REC', 'FNF'])
+        name_status_map = [{'name': c.name, 'status': c.get_status_display(), 'inactive': c.inactive} for c in queryset]
+        return Response(name_status_map, status=status.HTTP_200_OK)
