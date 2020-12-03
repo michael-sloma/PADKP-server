@@ -19,7 +19,7 @@ def index(request):
     total_earned = {x['characters_present']: x['value'] for x in dumps}
     print(total_earned)
 
-    purchases = Purchase.objects.values('character').annotate(value=Sum('value'))
+    purchases = Purchase.objects.filter(is_alt=False).values('character').annotate(value=Sum('value'))
     total_spent = {x['character']: x['value'] for x in purchases}
     extra_awards = DkpSpecialAward.objects.values('character').annotate(value=Sum('value'))
     total_extra = {x['character']: x['value'] for x in extra_awards}
