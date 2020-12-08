@@ -59,9 +59,11 @@ class UploadRaidDump(viewsets.ViewSet):
         dump_contents = request.data['dump_contents']
         waitlist = request.data.get('waitlist', [])
         characters = _parse_dump(dump_contents)
-        characters += [{'name': x, 'character_class': 'Unknown'} for x in waitlist]
+        characters += [{'name': x, 'character_class': 'Unknown'}
+                       for x in waitlist]
         characters_present = _get_or_create_characters(characters)
-        characters_present = [c for c in characters_present if c.status != 'ALT']
+        characters_present = [
+            c for c in characters_present if c.status != 'ALT']
 
         value = request.data['value']
         attendance_value = 1 if request.data['counts_for_attendance'] else 0
@@ -74,7 +76,8 @@ class UploadRaidDump(viewsets.ViewSet):
             # the dump file name. we will continue to support this for now.
             # it does cause problems for timezone support because we don't know
             # the local time of the client
-            time = dt.datetime.strptime(filename, 'RaidRoster_mangler-%Y%m%d-%H%M%S.txt')
+            time = dt.datetime.strptime(
+                filename, 'RaidRoster_mangler-%Y%m%d-%H%M%S.txt')
 
         notes = request.data['notes']
         award_type = request.data['award_type']
@@ -97,7 +100,8 @@ class UploadCasualRaidDump(viewsets.ViewSet):
         waitlist = request.data.get('waitlist', [])
         characters = [c['name'] for c in _parse_dump(dump_contents)]
         characters += waitlist
-        characters_present = models.CasualCharacter.objects.filter(name__in=characters)
+        characters_present = models.CasualCharacter.objects.filter(
+            name__in=characters)
 
         value = request.data['value']
         filename = request.data['filename']
@@ -109,11 +113,13 @@ class UploadCasualRaidDump(viewsets.ViewSet):
             # the dump file name. we will continue to support this for now.
             # it does cause problems for timezone support because we don't know
             # the local time of the client
-            time = dt.datetime.strptime(filename, 'RaidRoster_mangler-%Y%m%d-%H%M%S.txt')
+            time = dt.datetime.strptime(
+                filename, 'RaidRoster_mangler-%Y%m%d-%H%M%S.txt')
 
         notes = request.data['notes']
 
-        dump = models.CasualRaidDump(value=value, filename=filename, time=time, notes=notes)
+        dump = models.CasualRaidDump(
+            value=value, filename=filename, time=time, notes=notes)
         dump.save()
         dump.characters_present.set(characters_present)
         return Response('Raid dump upload successful', status=status.HTTP_201_CREATED)
@@ -121,7 +127,8 @@ class UploadCasualRaidDump(viewsets.ViewSet):
 
 class ChargeDKP(viewsets.ViewSet):
     """ Charge DKP for an item """
-    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication,
+                              BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = models.Purchase.objects.all()
 
@@ -154,7 +161,8 @@ class DkpSpecialAwardViewSet(viewsets.ModelViewSet):
 
 
 class Tiebreak(viewsets.ViewSet):
-    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication,
+                              BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = models.Character.objects.all()
 
@@ -169,24 +177,28 @@ def tiebreak(characters):
     def ordering(character):
         return character.current_dkp(), character.attendance(30)
 
-    orderings = {character.name: ordering(character) for character in characters}
+    orderings = {character.name: ordering(
+        character) for character in characters}
 
     def explain(name):
         dkp, attendance = orderings[name]
-        return "{} has {} DKP and {} 30-day attendance".format(name, dkp, '%.2f'%attendance)
+        return "{} has {} DKP and {} 30-day attendance".format(name, dkp, '%.2f' % attendance)
     names = [c.name for c in characters]
-    random.shuffle(names) # shuffle so unbreakable ties are decided at random
+    random.shuffle(names)  # shuffle so unbreakable ties are decided at random
     winners = sorted(names, key=lambda name: orderings[name], reverse=True)
     return [(name, explain(name)) for name in winners]
 
 
 class SecondClassCitizens(viewsets.ViewSet):
-    authentication_classes = [TokenAuthentication, BasicAuthentication, SessionAuthentication]
+    authentication_classes = [TokenAuthentication,
+                              BasicAuthentication, SessionAuthentication]
     permission_classes = [IsAuthenticated]
     queryset = models.Character.objects.all()
 
     def list(self, request):
         queryset = models.Character.objects.filter(inactive=True) | \
-                   models.Character.objects.filter(status__in=['ALT', 'INA', 'REC', 'FNF'])
-        name_status_map = [{'name': c.name, 'status': c.get_status_display(), 'inactive': c.inactive} for c in queryset]
+            models.Character.objects.filter(
+                status__in=['ALT', 'INA', 'REC', 'FNF'])
+        name_status_map = [{'name': c.name, 'status': c.get_status_display(
+        ), 'inactive': c.inactive} for c in queryset]
         return Response(name_status_map, status=status.HTTP_200_OK)
