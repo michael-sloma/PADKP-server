@@ -82,10 +82,18 @@ class UploadRaidDump(viewsets.ViewSet):
         notes = request.data['notes']
         award_type = request.data['award_type']
 
-        dump = models.RaidDump(value=value, attendance_value=attendance_value, filename=filename,
-                               time=time, notes=notes, award_type=award_type)
-        dump.save()
-        dump.characters_present.set(characters_present)
+        dump_query = models.RaidDump.objects.filter(time=time)
+
+        if len(dump_query) == 1:
+            dump = dump_query.get()
+            dump.characters_present.add(characters_present)
+        else:
+            dump = models.RaidDump(value=value, attendance_value=attendance_value,
+                                   filename=filename, time=time, notes=notes,
+                                   award_type=award_type)
+            dump.save()
+            dump.characters_present.set(characters_present)
+
         return Response('Raid dump upload successful', status=status.HTTP_201_CREATED)
 
 
