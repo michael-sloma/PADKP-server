@@ -86,7 +86,9 @@ class UploadRaidDump(viewsets.ViewSet):
 
         if len(dump_query) == 1:
             dump = dump_query.get()
-            dump.characters_present.add(characters_present)
+            new_characters = list(
+                set([c for c in dump.characters_present.all()]) | set(characters_present))
+            dump.characters_present.set(new_characters)
         else:
             dump = models.RaidDump(value=value, attendance_value=attendance_value,
                                    filename=filename, time=time, notes=notes,
