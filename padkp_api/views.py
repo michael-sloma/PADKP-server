@@ -185,10 +185,10 @@ class Tiebreak(viewsets.ViewSet):
 
 
 def tiebreak(characters, bid_names):
-    def ordering(character, is_alt):
-        if is_alt:
-            return character.current_alt_dkp(), character.attendance(30)
-        return character.current_dkp(), character.attendance(30)
+    def ordering(character, is_main):
+        if is_main:
+            return character.current_dkp(), character.attendance(30)
+        return character.current_alt_dkp(), character.attendance(30)
 
     orderings = {c.name if c.name in bid_names else c.name + "'s alt": ordering(
         c, c.name in bid_names) for c in characters}
