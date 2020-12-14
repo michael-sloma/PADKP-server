@@ -177,23 +177,27 @@ class Tiebreak(viewsets.ViewSet):
     queryset = models.Character.objects.all()
 
     def create(self, request):
-        names = request.data.get('characters', [])
+        bid_names = request.data.get('characters', [])
+        names = [name.replace("'s alt", "") for name in bid_names]
         characters = models.Character.objects.filter(name__in=names)
-        result = tiebreak(characters)
+        result = tiebreak(characters, bid_names)
         return Response(result, status=status.HTTP_200_OK)
 
 
-def tiebreak(characters):
-    def ordering(character):
-        return character.current_dkp(), character.attendance(30)
+def tiebreak(characters, bid_names):
+    def ordering(character, is_main):
+        if is_main:
+            return character.current_dkp(), character.attendance(30)
+        return character.current_alt_dkp(), character.attendance(30)
 
-    orderings = {character.name: ordering(
-        character) for character in characters}
+    orderings = {c.name if c.name in bid_names else c.name + "'s alt": ordering(
+        c, c.name in bid_names) for c in characters}
 
     def explain(name):
         dkp, attendance = orderings[name]
         return "{} has {} DKP and {} 30-day attendance".format(name, dkp, '%.2f' % attendance)
-    names = [c.name for c in characters]
+    names = [c.name if c.name in bid_names else c.name +
+             "'s alt" for c in characters]
     random.shuffle(names)  # shuffle so unbreakable ties are decided at random
     winners = sorted(names, key=lambda name: orderings[name], reverse=True)
     return [(name, explain(name)) for name in winners]
