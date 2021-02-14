@@ -4,7 +4,7 @@ from django import forms
 from django.contrib.admin.widgets import AdminSplitDateTime
 
 from django.contrib.auth.models import User
-from .models import Character, Purchase, RaidDump, DkpSpecialAward, main_change
+from .models import Character, Purchase, RaidDump, DkpSpecialAward, main_change, CharacterAlt
 from .models import CasualCharacter, CasualDkpSpecialAward, CasualPurchase, CasualRaidDump
 from rest_framework.authtoken.models import Token
 
@@ -25,6 +25,7 @@ class PaDkpShowAdminSite(admin.AdminSite):
     def my_view(self, request, slug):
         return HttpResponse("Hello {}!".format(slug))
 
+
 admin_site = PaDkpShowAdminSite(name='padkp_show_admin')
 
 admin_site.register(User)
@@ -37,20 +38,25 @@ admin_site.register(Token)
 admin_site.register(CasualPurchase)
 admin_site.register(CasualRaidDump)
 admin_site.register(CasualCharacter)
+admin_site.register(CharacterAlt)
 admin_site.register(CasualDkpSpecialAward)
 
 
 class MainChangeForm(forms.Form):
     main_change_to = forms.CharField(max_length=100)
 
+
 class CharacterForm(forms.ModelForm):
     class Meta:
         exclude = []
         model = Character
 
-    main_change = forms.ModelChoiceField(Character.objects.filter(status='ALT'), required=False)
-    add_to_dumps_starting = forms.SplitDateTimeField(widget=AdminSplitDateTime, required=False)
-    add_to_dumps_ending = forms.SplitDateTimeField(widget=AdminSplitDateTime, required=False)
+    main_change = forms.ModelChoiceField(
+        Character.objects.filter(status='ALT'), required=False)
+    add_to_dumps_starting = forms.SplitDateTimeField(
+        widget=AdminSplitDateTime, required=False)
+    add_to_dumps_ending = forms.SplitDateTimeField(
+        widget=AdminSplitDateTime, required=False)
 
     def clean(self):
         super(CharacterForm, self).clean()
@@ -59,9 +65,8 @@ class CharacterForm(forms.ModelForm):
         start = self.cleaned_data.get('add_to_dumps_starting')
         end = self.cleaned_data.get('add_to_dumps_ending')
         if (start and not end) or (end and not start):
-            raise forms.ValidationError('Must provide a both a start and end time to add character to dumps')
-
-
+            raise forms.ValidationError(
+                'Must provide a both a start and end time to add character to dumps')
 
 
 class CharacterAdmin(admin.ModelAdmin):
@@ -81,11 +86,11 @@ class CharacterAdmin(admin.ModelAdmin):
         add_start = form.cleaned_data['add_to_dumps_starting']
         add_end = form.cleaned_data['add_to_dumps_ending']
         if add_start and add_end:
-            dumps = RaidDump.objects.filter(time__gte=add_start, time__lte=add_end)
+            dumps = RaidDump.objects.filter(
+                time__gte=add_start, time__lte=add_end)
             for dump in dumps:
                 dump.characters_present.add(obj)
         print("DATA", form.cleaned_data)
 
 
 admin_site.register(Character, CharacterAdmin)
-

@@ -5,6 +5,7 @@ import datetime as dt
 import random
 
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
@@ -145,10 +146,14 @@ class ChargeDKP(viewsets.ViewSet):
     def create(self, request):
         cname = request.data['character']
         try:
-            character_obj = models.Character.objects.get(pk=cname)
+            alt_obj = models.CharacterAlt.objects.get(pk=cname)
+            character_obj = alt_obj.main
         except ObjectDoesNotExist:
-            return Response('{} does not exist in the database. Create the character first!'.format(cname),
-                            status=status.HTTP_400_BAD_REQUEST)
+            try:
+                character_obj = models.Character.objects.get(pk=cname)
+            except ObjectDoesNotExist:
+                return Response('{} does not exist in the database. Create the character first!'.format(cname),
+                                status=status.HTTP_400_BAD_REQUEST)
         models.Purchase(
             character=character_obj,
             item_name=request.data['item_name'],
@@ -177,8 +182,23 @@ class Tiebreak(viewsets.ViewSet):
     queryset = models.Character.objects.all()
 
     def create(self, request):
-        bid_names = request.data.get('characters', [])
-        names = [name.replace("'s alt", "") for name in bid_names]
+        raw_names = request.data.get('characters', [])
+        bid_names = {}
+        names = []
+        for name in raw_names:
+            new_name = name.replace("'s alt", "")
+            names.append(new_name)
+            bid_names[new_name] = name
+
+        alts = models.CharacterAlt.objects.filter(name__in=names)
+        alt_names = [x.name for x in alts]
+        names = [x for x in names if x not in alt_names]
+
+        for alt in alts:
+            old = bid_names.pop(alt.name)
+            bid_names[alt.main.name] = old
+            names.append(alt.main.name)
+
         characters = models.Character.objects.filter(name__in=names)
         result = tiebreak(characters, bid_names)
         return Response(result, status=status.HTTP_200_OK)
@@ -190,14 +210,13 @@ def tiebreak(characters, bid_names):
             return character.current_dkp(), character.attendance(30)
         return character.current_alt_dkp(), character.attendance(30)
 
-    orderings = {c.name if c.name in bid_names else c.name + "'s alt": ordering(
-        c, c.name in bid_names) for c in characters}
+    orderings = {bid_names[c.name]: ordering(
+        c, c.name != bid_names[c.name]) for c in characters}
 
     def explain(name):
         dkp, attendance = orderings[name]
         return "{} has {} DKP and {} 30-day attendance".format(name, dkp, '%.2f' % attendance)
-    names = [c.name if c.name in bid_names else c.name +
-             "'s alt" for c in characters]
+    names = [bid_names[c.name] for c in characters]
     random.shuffle(names)  # shuffle so unbreakable ties are decided at random
     winners = sorted(names, key=lambda name: orderings[name], reverse=True)
     return [(name, explain(name)) for name in winners]

@@ -12,6 +12,7 @@ EQ_CLASSES = [
     'Cleric', 'Druid', 'Shaman', 'Unknown'
 ]
 
+
 class Character(models.Model):
     """ Represents a member """
     MAIN = 'MN'
@@ -23,7 +24,8 @@ class Character(models.Model):
                       (INACTIVE, 'Inactive'), (FNF, 'FNF')]
 
     name = models.CharField(primary_key=True, max_length=100)
-    character_class = models.CharField(max_length=20, choices=[(x,x) for x in EQ_CLASSES])
+    character_class = models.CharField(
+        max_length=20, choices=[(x, x) for x in EQ_CLASSES])
     status = models.CharField(max_length=3, choices=status_choices)
     leave_of_absence = models.BooleanField(default=False)
     inactive = models.BooleanField(default=False)
@@ -36,29 +38,40 @@ class Character(models.Model):
         return self.cleaned_data['name'].capitalize()
 
     def attendance(self, days):
-        days_ago = pytz.utc.localize(dt.datetime.utcnow()) - dt.timedelta(days=days)
-        raid_dumps = RaidDump.objects.filter(time__gte=days_ago).aggregate(total=Sum('attendance_value'))
+        days_ago = pytz.utc.localize(
+            dt.datetime.utcnow()) - dt.timedelta(days=days)
+        raid_dumps = RaidDump.objects.filter(
+            time__gte=days_ago).aggregate(total=Sum('attendance_value'))
         my_raid_dumps = RaidDump.objects.filter(time__gte=days_ago).filter(
             characters_present=self.name).aggregate(total=Sum('attendance_value'))
         my_awards = DkpSpecialAward.objects.filter(time__gte=days_ago).filter(
             character=self.name).aggregate(total=Sum('attendance_value'))
-        my_attendance_points = (my_raid_dumps['total'] or 0) + (my_awards['total'] or 0)
+        my_attendance_points = (
+            my_raid_dumps['total'] or 0) + (my_awards['total'] or 0)
         return 100 * float(my_attendance_points) / raid_dumps['total']
 
     def current_dkp(self):
-        dumps = RaidDump.objects.filter(characters_present=self.name).aggregate(total=Sum('value'))
-        purchases = Purchase.objects.filter(is_alt=False, character=self.name).aggregate(total=Sum('value'))
-        extra_awards = DkpSpecialAward.objects.filter(character=self.name).aggregate(total=Sum('value'))
+        dumps = RaidDump.objects.filter(
+            characters_present=self.name).aggregate(total=Sum('value'))
+        purchases = Purchase.objects.filter(
+            is_alt=False, character=self.name).aggregate(total=Sum('value'))
+        extra_awards = DkpSpecialAward.objects.filter(
+            character=self.name).aggregate(total=Sum('value'))
 
-        current_dkp = (dumps['total'] or 0)  + (extra_awards['total'] or 0)  - (purchases['total'] or 0)
+        current_dkp = (dumps['total'] or 0) + \
+            (extra_awards['total'] or 0) - (purchases['total'] or 0)
         return current_dkp
 
     def current_alt_dkp(self):
-        dumps = RaidDump.objects.filter(time__gte=DON_RELEASE, characters_present=self.name).aggregate(total=Sum('value'))
-        purchases = Purchase.objects.filter(character=self.name, is_alt=True).aggregate(total=Sum('value'))
-        extra_awards = DkpSpecialAward.objects.filter(time__gte=DON_RELEASE, character=self.name).aggregate(total=Sum('value'))
+        dumps = RaidDump.objects.filter(
+            time__gte=DON_RELEASE, characters_present=self.name).aggregate(total=Sum('value'))
+        purchases = Purchase.objects.filter(
+            character=self.name, is_alt=True).aggregate(total=Sum('value'))
+        extra_awards = DkpSpecialAward.objects.filter(
+            time__gte=DON_RELEASE, character=self.name).aggregate(total=Sum('value'))
 
-        current_dkp = (dumps['total'] or 0)  + (extra_awards['total'] or 0)  - (purchases['total'] or 0)
+        current_dkp = (dumps['total'] or 0) + \
+            (extra_awards['total'] or 0) - (purchases['total'] or 0)
         return current_dkp
 
     def decay_dkp(self, decay, notes, dry_run=True):
@@ -69,7 +82,8 @@ class Character(models.Model):
                                 attendance_value=0,
                                 time=dt.datetime.utcnow(),
                                 notes=notes)
-        print('{} has {} dkp, decaying by {}'.format(self.name, current_dkp, decay_penalty))
+        print('{} has {} dkp, decaying by {}'.format(
+            self.name, current_dkp, decay_penalty))
         if not dry_run:
             award.save()
 
@@ -85,7 +99,8 @@ class Character(models.Model):
                                     attendance_value=0,
                                     time=dt.datetime.utcnow(),
                                     notes=notes)
-            print('capping {} at {} dkp (had {})'.format(self.name, cap, current_dkp))
+            print('capping {} at {} dkp (had {})'.format(
+                self.name, cap, current_dkp))
             if not dry_run:
                 award.save()
             return True
@@ -101,14 +116,25 @@ class Character(models.Model):
             award.save()
 
 
-Character._meta.ordering=['name']
+Character._meta.ordering = ['name']
+
+
+class CharacterAlt(models.Model):
+    """ Represents a member's alt """
+    name = models.CharField(primary_key=True, max_length=100)
+    main = models.ForeignKey(Character,  on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
 
 class RaidDump(models.Model):
     """ Represents a raid dump upload. Awards dkp and optionally attendance"""
     value = models.IntegerField()
     attendance_value = models.IntegerField()
     time = models.DateTimeField()
-    characters_present = models.ManyToManyField(Character, related_name='raid_dumps')
+    characters_present = models.ManyToManyField(
+        Character, related_name='raid_dumps')
     filename = models.CharField(max_length=50)
 
     type_choices = [('Time', 'Time'),
@@ -120,7 +146,8 @@ class RaidDump(models.Model):
     def __str__(self):
         attendance_str = '' if self.attendance_value else " -- not counted for attendance"
         notes_str = '' if not self.notes else '({}) '.format(self.notes)
-        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
+        time_str = self.time.astimezone(pytz.timezone(
+            'US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
         return '{} for {} {}on {} {}'.format(self.value, self.award_type, notes_str, time_str, attendance_str)
 
 
@@ -140,7 +167,8 @@ class DkpSpecialAward(models.Model):
     def __str__(self):
         attendance_str = '' if self.attendance_value else " -- not counted for attendance"
         notes_str = '' if not self.notes else '({}) '.format(self.notes)
-        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
+        time_str = self.time.astimezone(pytz.timezone(
+            'US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
         return '{} {}on {} {}'.format(self.value, notes_str, time_str, attendance_str)
 
 
@@ -199,14 +227,16 @@ def main_change(name_from, name_to):
                         value=0,
                         attendance_value=dump.attendance_value,
                         time=dump.time,
-                        notes='transfer attendance from {}'.format(char_from.name)
+                        notes='transfer attendance from {}'.format(
+                            char_from.name)
                         ).save()
 
 
 class CasualCharacter(models.Model):
     """ Represents a member """
     name = models.CharField(primary_key=True, max_length=100)
-    character_class = models.CharField(max_length=20, choices=[(x,x) for x in EQ_CLASSES])
+    character_class = models.CharField(
+        max_length=20, choices=[(x, x) for x in EQ_CLASSES])
 
     def __str__(self):
         return self.name
@@ -215,29 +245,35 @@ class CasualCharacter(models.Model):
         return self.cleaned_data['name'].capitalize()
 
     def current_dkp(self):
-        dumps = CasualRaidDump.objects.filter(characters_present=self.name).aggregate(total=Sum('value'))
-        purchases = CasualPurchase.objects.filter(character=self.name).aggregate(total=Sum('value'))
-        extra_awards = CasualDkpSpecialAward.objects.filter(character=self.name).aggregate(total=Sum('value'))
+        dumps = CasualRaidDump.objects.filter(
+            characters_present=self.name).aggregate(total=Sum('value'))
+        purchases = CasualPurchase.objects.filter(
+            character=self.name).aggregate(total=Sum('value'))
+        extra_awards = CasualDkpSpecialAward.objects.filter(
+            character=self.name).aggregate(total=Sum('value'))
 
-        current_dkp = (dumps['total'] or 0)  + (extra_awards['total'] or 0)  - (purchases['total'] or 0)
+        current_dkp = (dumps['total'] or 0) + \
+            (extra_awards['total'] or 0) - (purchases['total'] or 0)
         return current_dkp
 
 
-CasualCharacter._meta.ordering=['name']
+CasualCharacter._meta.ordering = ['name']
 
 
 class CasualRaidDump(models.Model):
     """ Represents a raid dump upload. Awards dkp and optionally attendance"""
     value = models.IntegerField()
     time = models.DateTimeField()
-    characters_present = models.ManyToManyField(CasualCharacter, related_name='raid_dumps')
+    characters_present = models.ManyToManyField(
+        CasualCharacter, related_name='raid_dumps')
     filename = models.CharField(max_length=50)
 
     notes = models.TextField(default="", blank=True)
 
     def __str__(self):
         notes_str = '' if not self.notes else '({}) '.format(self.notes)
-        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
+        time_str = self.time.astimezone(pytz.timezone(
+            'US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
         return '{} on {} -- {}'.format(self.value, time_str, notes_str)
 
 
@@ -256,7 +292,8 @@ class CasualDkpSpecialAward(models.Model):
     def __str__(self):
         attendance_str = ''
         notes_str = '' if not self.notes else '({}) '.format(self.notes)
-        time_str = self.time.astimezone(pytz.timezone('US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
+        time_str = self.time.astimezone(pytz.timezone(
+            'US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
         return '{} {}on {} {}'.format(self.value, notes_str, time_str, attendance_str)
 
 
