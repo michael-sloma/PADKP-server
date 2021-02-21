@@ -62,6 +62,14 @@ class UploadRaidDump(viewsets.ViewSet):
         characters = _parse_dump(dump_contents)
         characters += [{'name': x, 'character_class': 'Unknown'}
                        for x in waitlist]
+        names = [x['name'] for x in characters]
+        alts = models.CharacterAlt.objects.filter(name__in=names)
+        alt_names = [x.name for x in alts]
+        main_names = [x.main.name for x in alts]
+        characters = [x for x in characters if x['name']
+                      not in alt_names and x['name'] not in main_names]
+        characters += [{'name': x, 'character_class': 'Unknown'}
+                       for x in main_names]
         characters_present = _get_or_create_characters(characters)
         characters_present = [
             c for c in characters_present if c.status != 'ALT']
