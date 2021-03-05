@@ -219,7 +219,7 @@ def tiebreak(characters, bid_names):
         return character.current_alt_dkp(), character.attendance(30)
 
     orderings = {bid_names[c.name]: ordering(
-        c, c.name != bid_names[c.name]) for c in characters}
+        c, c.name == bid_names[c.name]) for c in characters}
 
     def explain(name):
         dkp, attendance = orderings[name]
