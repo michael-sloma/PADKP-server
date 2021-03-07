@@ -155,9 +155,11 @@ class ChargeDKP(viewsets.ViewSet):
         cname = request.data['character']
         try:
             alt_obj = models.CharacterAlt.objects.get(pk=cname)
+            is_alt = True
             character_obj = alt_obj.main
         except ObjectDoesNotExist:
             try:
+                is_alt = request.data['is_alt']
                 character_obj = models.Character.objects.get(pk=cname)
             except ObjectDoesNotExist:
                 return Response('{} does not exist in the database. Create the character first!'.format(cname),
@@ -168,7 +170,7 @@ class ChargeDKP(viewsets.ViewSet):
             value=request.data['value'],
             time=request.data['time'],
             notes=request.data['notes'],
-            is_alt=request.data['is_alt'],
+            is_alt=is_alt,
         ).save()
         return Response('DKP charge successful', status=status.HTTP_201_CREATED)
 

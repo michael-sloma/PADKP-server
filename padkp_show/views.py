@@ -7,7 +7,7 @@ from django.template import loader
 from rest_framework import viewsets, routers
 
 from django.db.models import Sum
-from .models import Purchase, Character, RaidDump, DkpSpecialAward
+from .models import Purchase, Character, RaidDump, DkpSpecialAward, CharacterAlt
 from .models import CasualPurchase, CasualCharacter, CasualRaidDump, CasualDkpSpecialAward
 from .models import DON_RELEASE
 
@@ -96,6 +96,10 @@ def character_dkp(request, character):
     extra_awards = DkpSpecialAward.objects.filter(
         character=character).aggregate(total=Sum('value'))
 
+    alts = CharacterAlt.objects.filter(main=c_obj)
+    alt_names = [x.name for x in alts]
+    alt_string = "None." if not alt_names else ", ".join(alt_names)
+
     current_dkp = c_obj.current_dkp()
     alt_dkp = c_obj.current_alt_dkp()
     attendance_30 = '%.1f' % (c_obj.attendance(30))
@@ -125,6 +129,7 @@ def character_dkp(request, character):
     context = {'attendance_30': attendance_30,
                'current_dkp': current_dkp,
                'alt_dkp': alt_dkp,
+               'alt_string': alt_string,
                'name': c_obj.name,
                'character_class': c_obj.character_class,
                'rank': display_rank,
