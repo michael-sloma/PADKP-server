@@ -91,6 +91,21 @@ class TiebreakTests(TestCase):
         self.assertEqual(
             data[1][1], 'Seped\'s alt has 8 DKP and 100.00 30-day attendance')
 
+    def test_tiebreak_with_bid_from_alt_no_tag(self):
+        factory = APIRequestFactory()
+        request = factory.post(
+            '/api/tiebreak/', {'characters': ['Seped', 'Quaff']}, format='json')
+        view = Tiebreak.as_view({'post': 'create'})
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        self.assertEqual(data[0][0], 'Quaff')
+        self.assertEqual(data[1][0], 'Seped')
+        self.assertEqual(
+            data[1][1], 'Seped has 8 DKP and 100.00 30-day attendance')
+
 
 class ChargeDKPTests(TestCase):
 
