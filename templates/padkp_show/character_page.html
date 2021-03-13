@@ -1,47 +1,38 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<link id="dark-theme-style" rel="stylesheet" />
 
-<nav class="navbar navbar-default">
+<body>
+  {% include "padkp_show/header.html" %}
   <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand"> Phoenix Ascended DKP Management</a>
-    </div>
-    <ul class="nav navbar-nav">
-      <li class="active"><a href="#">Home</a></li>
-      <li><a href="/items/">Items</a></li>
-      <li><a href="/awards/">Awards</a></li>
-      <li><a href="/attendance/">Attendance</a></li>
+    <p>
+    <h1>{{ name }} </h1>
+    </p>
+    <p>
+    <h2>{{ character_class }} ({{ rank }})</h2>
+    </p>
+    <p>Registered Alts: {{ alt_string }} </p>
+    <p>Current DKP: {{ current_dkp }}</p>
+    <p>Alt DKP: {{ alt_dkp }}</p>
+    <p>Attendance (30 days): {{ attendance_30 }}%</p>
+
+    <p>Recent DKP awards:<br>
+    <ul style="list-style-type:none;">
+      {% for award in awards_14 %}
+      {% if not award.present %} <div class="text-danger">{% endif %}
+        <li>
+          {{award.award}} {% if not award.present %} (not present) {% endif %}
+        </li>
+        {% if not award.present %}
+      </div> {% endif %}
+      {% endfor %}
     </ul>
+    </p>
+    <p>Recent purchases:<br>
+    <ul style="list-style-type:none;">
+      {% for purchase in purchases_30 %}
+      <li>{{purchase}}</li>
+      {% endfor %}
+    </ul>
+    </p>
   </div>
-</nav>
-
-
-<p>
-<h1>{{ name }} </h1>
-</p>
-<p>
-<h2>{{ character_class }} ({{ rank }})</h2>
-</p>
-<p>Registered Alts: {{ alt_string }} </p>
-<p>Current DKP: {{ current_dkp }}</p>
-<p>Alt DKP: {{ alt_dkp }}</p>
-<p>Attendance (30 days): {{ attendance_30 }}%</p>
-
-<p>Recent DKP awards:<br>
-<ul style="list-style-type:none;">
-  {% for award in awards_14 %}
-  {% if not award.present %} <div class="text-danger">{% endif %}
-    <li>
-      {{award.award}} {% if not award.present %} (not present) {% endif %}
-    </li>
-    {% if not award.present %}
-  </div> {% endif %}
-  {% endfor %}
-</ul>
-</p>
-<p>Recent purchases:<br>
-<ul style="list-style-type:none;">
-  {% for purchase in purchases_30 %}
-  <li>{{purchase}}</li>
-  {% endfor %}
-</ul>
-</p>
+</body>

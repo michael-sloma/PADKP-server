@@ -1,50 +1,43 @@
 <meta name="google" content="notranslate" />
 
-<nav class="navbar navbar-default">
-  <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand"> Phoenix Ascended DKP Management</a>
-    </div>
-    <ul class="nav navbar-nav">
-      <li><a href="/">Home</a></li>
-      <li><a href="/items/">Items</a></li>
-      <li><a href="/awards/">Awards</a></li>
-      <li class="active"><a href="/attendance/">Attendance</a></li>
-      <li><a href="/rules/">Rules</a></li>
-    </ul>
-  </div>
-</nav>
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/css/theme.default.min.css" />
+<link id="dark-theme-style" rel="stylesheet" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.widgets.js"></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.widgets.js"></script>
 <script>
-$(function(){
+  $(function () {
     $('#current_dkp').tablesorter({
     });
-});
+  });
 </script>
 
-<table id="current_dkp" class="table table-sm table-striped tablesorter">
-<thead>
-  <tr>
-    <th>Character</th>
-    <th>Class</th>
-    <th>Status</th>
-    <th>Attendance (30 days)</th>
-    <th>Attendance (90 days)</th>
-  </tr>
-</thead> 
-<tbody>
-{% for record in records %}
-<tr>
-  <td><a href="/{{record.name}}">{{record.name}}</a></td>
-  <td>{{record.character_class}}</td>
-  <td>{{record.character_status}}</td>
-  <td>{{record.attendance}}</td>
-  <td>{{record.attendance_90}}</td>
-{% endfor %}
-</tbody>
-</table>
+<body>
+  {% include "padkp_show/header.html" %}
+  <div class="container-fluid">
+
+    <table id="current_dkp" class="table table-sm table-striped tablesorter">
+      <thead>
+        <tr>
+          <th>Character</th>
+          <th>Class</th>
+          <th>Status</th>
+          <th>Attendance (30 days)</th>
+          <th>Attendance (90 days)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for record in records %}
+        <tr>
+          <td><a href="/{{record.name}}">{{record.name}}</a></td>
+          <td>{{record.character_class}}</td>
+          <td>{{record.character_status}}</td>
+          <td>{{record.attendance}}</td>
+          <td>{{record.attendance_90}}</td>
+          {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>

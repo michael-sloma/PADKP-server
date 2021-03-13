@@ -1,54 +1,45 @@
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/css/theme.default.min.css" />
+<link id="dark-theme-style" rel="stylesheet" />
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.widgets.js"></script>
+<script
+  src="https://cdnjs.cloudflare.com/ajax/libs/jquery.tablesorter/2.31.1/js/jquery.tablesorter.widgets.js"></script>
 <script>
-$(function(){
+  $(function () {
     $('#current_dkp').tablesorter({
 
     });
-});
+  });
 </script>
 
-<nav class="navbar navbar-default">
+<body>
+  {% include "padkp_show/header.html" %}
   <div class="container-fluid">
-    <div class="navbar-header">
-      <a class="navbar-brand"> Phoenix Ascended DKP Management</a>
-    </div>
-    <ul class="nav navbar-nav">
-      <li><a href="/">Home</a></li>
-      <li class="active"><a href="/items/">Items</a></li>
-      <li><a href="/awards/">Awards</a></li>
-      <li><a href="/attendance/">Attendance</a></li>
-      <li><a href="/rules/">Rules</a></li>
-    </ul>
+
+    <table id="current_dkp" class="table table-sm table-striped tablesorter">
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Awarded To</th>
+          <th>Date</th>
+          <th>Price</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for record in records %}
+        <tr>
+          <td>{{record.item_name}}</td>
+          <td><a href="/{{record.character}}">{{record.character}}</a></td>
+          <td>{{record.time | date:'Y-m-d'}}</td>
+          <td>{{record.value}}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% if show_all_link %}
+    <a href='/all_items'>Showing items from the past 90 days. Show more?</a>
+    {% endif %}
   </div>
-</nav>
-
-<table id="current_dkp" class="table table-sm table-striped tablesorter">
-  <thead>
-  <tr>
-    <th>Item</th>
-    <th>Awarded To</th>
-    <th>Date</th>
-    <th>Price</th>
-  </tr>
-  </thead>
-
-  <tbody>
-  {% for record in records %}
-  <tr>
-    <td>{{record.item_name}}</td>
-    <td><a href="/{{record.character}}">{{record.character}}</a></td>
-    <td>{{record.time | date:'Y-m-d'}}</td>
-    <td>{{record.value}}</td>
-  </tr>
-  {% endfor %}
-  </tbody>
-</table>
-{% if show_all_link %}
-	<a href='/all_items'>Showing items from the past 90 days. Show more?</a>
-{% endif %}
-
+</body>

@@ -17,3 +17,6 @@ Simple DKP display and CRUD operations
   * py manage.py runserver
 * login to localhost:8000/admin
 
+##Running Commands
+* py manage.py command_name
+

@@ -1,0 +1,41 @@
+<div class="navbar navbar-default text-center">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand"> Phoenix Ascended DKP Management</a>
+    </div>
+    <div class="navbar-collapse">
+      <ul class="nav navbar-nav" style="display: flex; align-items: center;">
+        <li {% ifequal request.path "/" %} class="active" {% endifequal %}><a href="/">Home</a></li>
+        <li {% ifequal request.path "/items/" %} class="active" {% endifequal %}><a href="/items/">Items</a></li>
+        <li {% ifequal request.path "/awards/" %} class="active" {% endifequal %}><a href="/awards/">Awards</a></li>
+        <li {% ifequal request.path "/attendance/" %} class="active" {% endifequal %}><a
+            href="/attendance/">Attendance</a>
+        </li>
+        <li><a href="/rules/">Rules</a></li>
+        <li>
+          <a class="btn" id="toggle-mode">Toggle darkmode</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  const btn = document.querySelector("#toggle-mode");
+
+  const currentTheme = localStorage.getItem("theme");
+  if (currentTheme == "dark") {
+    document.getElementById("dark-theme-style").setAttribute("href", "https://cdn.jsdelivr.net/npm/bootswatch@3.4.0/darkly/bootstrap.min.css")
+  }
+
+  btn.addEventListener("click", function () {
+    var theme = localStorage.getItem("theme");
+    if (theme == "dark") {
+      document.getElementById("dark-theme-style").setAttribute("href", "")
+      localStorage.setItem("theme", "light");
+    } else {
+      document.getElementById("dark-theme-style").setAttribute("href", "https://cdn.jsdelivr.net/npm/bootswatch@3.4.0/darkly/bootstrap.min.css")
+      localStorage.setItem("theme", "dark");
+    }
+  });
+</script>
