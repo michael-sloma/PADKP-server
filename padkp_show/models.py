@@ -48,7 +48,7 @@ class Character(models.Model):
             character=self.name).aggregate(total=Sum('attendance_value'))
         my_attendance_points = (
             my_raid_dumps['total'] or 0) + (my_awards['total'] or 0)
-        return 100 * float(my_attendance_points) / raid_dumps['total']
+        return 100 * float(my_attendance_points) / (raid_dumps['total'] or 1)
 
     def current_dkp(self):
         dumps = RaidDump.objects.filter(
@@ -188,7 +188,8 @@ class Purchase(models.Model):
         return "{} to {} for {} on {}".format(self.item_name,
                                               self.character_display(),
                                               self.value,
-                                              self.time.strftime("%m/%d/%y"))
+                                              self.time.astimezone(pytz.timezone(
+                                                  'US/Eastern')).strftime("%m/%d/%y"))
 
 
 def main_change(name_from, name_to):
