@@ -13,5 +13,6 @@ urlpatterns = [
     path('items/', views.items, name='items'),
     path('all_items/', views.all_items, name='items'),
     path('rules/', views.rules, name='rules'),
+    path('discord/', views.discord, name='discord'),
     path('<slug:character>/', views.character_dkp, name='dkp'),
 ]

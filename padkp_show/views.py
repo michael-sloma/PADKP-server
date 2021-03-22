@@ -55,7 +55,7 @@ def attendance_table(request):
 
     dumps = RaidDump.objects.values('characters_present').annotate(
         attendance_value=Sum('attendance_value'))
-    total_earned = {x['characters_present']                    : x['attendance_value'] for x in dumps}
+    total_earned = {x['characters_present']: x['attendance_value'] for x in dumps}
 
     extra_awards = DkpSpecialAward.objects.values(
         'character').annotate(attendance_value=Sum('attendance_value'))
@@ -170,9 +170,13 @@ def awards(request):
 
 
 def rules(request):
-    template = loader.get_template('padkp_show/rules.html')
     return redirect('https://docs.google.com/document/d/1guXmdDGmH96ilpwgZGMlfc3-Moofp3y2iaAErzyeIGw')
+    # template = loader.get_template('padkp_show/rules.html')
     # return HttpResponse(template.render())
+
+
+def discord(request):
+    return redirect('https://discord.gg/rxh36B6zSn')
 
 
 def class_balance_table(request):
