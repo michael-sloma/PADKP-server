@@ -22,7 +22,7 @@ class Command(BaseCommand):
         characters_to_wipe = Character.objects.exclude(
             name__in=list(characters_raided_last_180))
         for char in characters_to_wipe:
-            # if char.status == 'MN':
-            print(char)
+            if char.status == 'MN':
+                print(char)
 
         print('wipe_old script complete')
