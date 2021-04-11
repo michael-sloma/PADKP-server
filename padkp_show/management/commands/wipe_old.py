@@ -1,5 +1,5 @@
 import datetime as dt
-from padkp_show.models import Character
+from padkp_show.models import Character, RaidDump
 
 from django.core.management.base import BaseCommand, CommandError
 
@@ -13,7 +13,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print('running wipe_old script')
 
-        days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
+        days_ago_180 = dt.datetime.utcnow() - dt.timedelta(days=180)
         characters_raided_last_180_q = RaidDump.objects.filter(
             time__gte=days_ago_180).values('characters_present')
         characters_raided_last_180 = set(
