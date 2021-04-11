@@ -19,7 +19,9 @@ class Command(BaseCommand):
         characters_raided_last_30 = set(
             x['characters_present'] for x in characters_raided_last_30_q)
 
-        for char in characters_raided_last_30:
+        active_characters = Character.objects.filter(
+            name__in=list(characters_raided_last_30))
+        for char in active_characters:
             if char.inactive:
                 char.inactive = False
                 char.date_inactive = None
