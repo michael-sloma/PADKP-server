@@ -196,6 +196,7 @@ def main_change(name_from, name_to):
     print('main changing {} to {}'.format(name_from, name_to))
     char_from, = Character.objects.filter(name=name_from)
     char_to, = Character.objects.filter(name=name_to)
+    alt_registry = CharacterAlt.objects.filter(main__name=char_from.name)
 
     char_from.status = 'ALT'
     char_from.save()
@@ -204,7 +205,16 @@ def main_change(name_from, name_to):
     char_to.inactive = char_from.inactive
     char_to.save()
 
+    for alt in alt_registry:
+        if alt.name == name_to:
+            alt.name = name_from
+            alt.main = char_to
+        else:
+            alt.main = char_to
+        alt.save()
+
     char_from_dkp = char_from.current_dkp()
+    char_from_alt_dkp = char_from.current_alt_dkp()
 
     # zero out the old main
     DkpSpecialAward(character=char_from,
@@ -221,6 +231,15 @@ def main_change(name_from, name_to):
                     time=dt.datetime.now(),
                     notes='main change from {}'.format(char_from.name)
                     ).save()
+
+    # setup alt dkp correction
+    Purchase(
+        character=char_to,
+        item_name='Main Change Alt DKP Adjustor',
+        value=char_from_dkp - char_from_alt_dkp,
+        time=dt.datetime.now(),
+        is_alt=1,
+    ).save()
 
     # transfer attendance for last 30 days
     for dump in RaidDump.objects.filter(characters_present=char_from).exclude(characters_present=char_to):

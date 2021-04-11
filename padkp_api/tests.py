@@ -12,10 +12,10 @@ class TiebreakTests(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username='robert', email='robert@…', password='top_secret')
-        char1 = Character.objects.create(name='Lancegar', status='Main')
+        char1 = Character.objects.create(name='Lancegar', status='MN')
         CharacterAlt.objects.create(name='Seped', main=char1)
-        char2 = Character.objects.create(name='Quaff', status='Main')
-        char3 = Character.objects.create(name='Quaff2', status='Main')
+        char2 = Character.objects.create(name='Quaff', status='MN')
+        char3 = Character.objects.create(name='Quaff2', status='MN')
         time = timezone.now()
         dump = RaidDump(value=10, attendance_value=1, time=time)
         dump.save()
