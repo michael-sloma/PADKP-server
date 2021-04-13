@@ -8,7 +8,9 @@ class Command(BaseCommand):
     help = 'Wipe out characters from the site who have been gone more than 180 days'
 
     def add_arguments(self, parser):
-        pass
+        parser.add_argument('--dry-run', dest='dryrun', action='store_true')
+        parser.add_argument('--commit', dest='dryrun', action='store_false')
+        parser.set_defaults(dryrun=True)
 
     def handle(self, *args, **options):
         print('running wipe_old script')
@@ -21,8 +23,11 @@ class Command(BaseCommand):
 
         characters_to_wipe = Character.objects.exclude(
             name__in=list(characters_raided_last_180))
+
         for char in characters_to_wipe:
-            if char.status == 'MN':
+            if options['dryrun']:
                 print(char)
+            else:
+                char.delete()
 
         print('wipe_old script complete')

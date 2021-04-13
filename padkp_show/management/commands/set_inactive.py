@@ -21,13 +21,14 @@ class Command(BaseCommand):
 
         # For future discussion
 
-        # active_characters = Character.objects.filter(
-        #     name__in=list(characters_raided_last_30))
-        # for char in active_characters:
-        #     if char.inactive:
-        #         char.inactive = False
-        #         char.date_inactive = None
-        #         char.save()
+        active_characters = Character.objects.filter(
+            name__in=list(characters_raided_last_30))
+        for char in active_characters:
+            if char.inactive:
+                char.inactive = False
+                char.status = 'FNF'
+                char.date_inactive = None
+                char.save()
 
         characters_to_check_inactive = Character.objects.exclude(
             name__in=list(characters_raided_last_30))
