@@ -20,3 +20,5 @@ Simple DKP display and CRUD operations
 ##Running Commands
 * py manage.py command_name
 
+##Running Tests
+* py manage.py test

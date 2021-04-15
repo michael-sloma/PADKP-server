@@ -47,6 +47,23 @@ class MainChangeTests(TestCase):
         self.assertEqual(alt_listing.main.name, 'Seped')
         self.assertEqual(other_alts.main.name, 'Seped')
 
+    def test_main_change_alt_assignment_when_none_exists(self):
+        alt_listing, = CharacterAlt.objects.filter(name='Seped')
+        alt_listing.delete()
+
+        main_change('Lancegar', 'Seped')
+
+        self.char1.refresh_from_db()
+        self.char2.refresh_from_db()
+
+        alt_listing, = CharacterAlt.objects.filter(name='Lancegar')
+        other_alts, = CharacterAlt.objects.filter(name='AnotherAlt')
+
+        self.assertEqual(self.char1.status, 'ALT')
+        self.assertEqual(self.char2.status, 'MN')
+        self.assertEqual(alt_listing.main.name, 'Seped')
+        self.assertEqual(other_alts.main.name, 'Seped')
+
     def test_main_change_dkp_maintained(self):
         main_change('Lancegar', 'Seped')
 

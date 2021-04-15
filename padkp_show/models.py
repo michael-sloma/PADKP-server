@@ -205,13 +205,18 @@ def main_change(name_from, name_to):
     char_to.inactive = char_from.inactive
     char_to.save()
 
+    main_alt_relationship_exists = False
     for alt in alt_registry:
         if alt.name == name_to:
             alt.name = name_from
             alt.main = char_to
+            main_alt_relationship_exists = True
         else:
             alt.main = char_to
         alt.save()
+
+    if not main_alt_relationship_exists:
+        CharacterAlt.objects.create(name=name_from, main=char_to)
 
     char_from_dkp = char_from.current_dkp()
     char_from_alt_dkp = char_from.current_alt_dkp()
