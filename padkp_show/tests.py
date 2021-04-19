@@ -41,11 +41,13 @@ class MainChangeTests(TestCase):
 
         alt_listing, = CharacterAlt.objects.filter(name='Lancegar')
         other_alts, = CharacterAlt.objects.filter(name='AnotherAlt')
+        removed_alts = CharacterAlt.objects.filter(name='Seped')
 
         self.assertEqual(self.char1.status, 'ALT')
         self.assertEqual(self.char2.status, 'MN')
         self.assertEqual(alt_listing.main.name, 'Seped')
         self.assertEqual(other_alts.main.name, 'Seped')
+        self.assertEqual(removed_alts.count(), 0)
 
     def test_main_change_alt_assignment_when_none_exists(self):
         alt_listing, = CharacterAlt.objects.filter(name='Seped')
