@@ -10,6 +10,9 @@ router.register(r'upload_casual_dump', views.UploadCasualRaidDump)
 router.register(r'charge_dkp', views.ChargeDKP)
 router.register(r'tiebreak', views.Tiebreak)
 router.register(r'second_class', views.SecondClassCitizens)
+router.register(r'resolve_auction', views.ResolveAuction, basename='api')
+router.register(r'correct_auction', views.CorrectAuction, basename='api')
+router.register(r'cancel_auction', views.CancelAuction, basename='api')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.

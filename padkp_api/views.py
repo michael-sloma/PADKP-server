@@ -3,8 +3,8 @@ API used by the desktop auction manager client to charge and award DKP
 """
 import datetime as dt
 import random
+import traceback
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 
 from rest_framework import viewsets, status
@@ -48,6 +48,60 @@ def _get_or_create_characters(chars, create=True):
             result.append(new_char)
     print('character list', result)
     return result
+
+
+class ResolveAuction(viewsets.ViewSet):
+    """ submit a set of bids for resolution """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request):
+        fingerprint = request.data['fingerprint']
+        bids = request.data['bids']
+        item_name = request.data['item_name']
+        item_count = request.data.get('item_count', 1)
+        time = request.data['time']
+
+        try:
+            auc = models.Auction(fingerprint=fingerprint, item_name=item_name,
+                                 item_count=item_count, time=time)
+            auc.save()
+
+            warnings = auc.process_bids(bids)
+            winners = []
+            for winner in auc.determine_winners():
+                models.Purchase(
+                    character=winner.character,
+                    item_name=auc.item_name,
+                    value=winner.bid,
+                    time=auc.time,
+                    is_alt=winner.tag == 'ALT',
+                ).save()
+                char_name = winner.character.name
+                if winner.tag == 'ALT':
+                    char_name += "'s alt"
+                winners.append('{} for {}'.format(char_name, winner.bid))
+            while len(winners) < auc.item_count:
+                winners.append('Rot')
+            result = {
+                'message': '{} awarded to - {}'.format(
+                    item_name, ', '.join(winners)),
+                'warnings': warnings
+            }
+            return Response(result, status=status.HTTP_200_OK)
+
+        except Exception:
+            return Response(traceback.format_exc(), status=status.HTTP_400_BAD_REQUEST)
+
+        return Response('Raid dump upload successful', status=status.HTTP_200_OK)
+
+
+class CorrectAuction(viewsets.ViewSet):
+    """ submit a set of winners to override auction result """
+
+
+class CancelAuction(viewsets.ViewSet):
+    """ submit the fingerprint of an auction to cancel """
 
 
 class UploadRaidDump(viewsets.ViewSet):
@@ -153,24 +207,20 @@ class ChargeDKP(viewsets.ViewSet):
 
     def create(self, request):
         cname = request.data['character']
-        try:
-            alt_obj = models.CharacterAlt.objects.get(pk=cname)
-            is_alt = True
-            character_obj = alt_obj.main
-        except ObjectDoesNotExist:
-            try:
-                is_alt = request.data['is_alt']
-                character_obj = models.Character.objects.get(pk=cname)
-            except ObjectDoesNotExist:
-                return Response('{} does not exist in the database. Create the character first!'.format(cname),
-                                status=status.HTTP_400_BAD_REQUEST)
+
+        is_alt, character_obj = models.Character.find_character(cname)
+
+        if not character_obj:
+            Response('{} does not exist in the database. Create the character first!'.format(cname),
+                     status=status.HTTP_400_BAD_REQUEST)
+
         models.Purchase(
             character=character_obj,
             item_name=request.data['item_name'],
             value=request.data['value'],
             time=request.data['time'],
             notes=request.data['notes'],
-            is_alt=is_alt,
+            is_alt=is_alt or request.data['is_alt'],
         ).save()
         return Response('DKP charge successful', status=status.HTTP_201_CREATED)
 

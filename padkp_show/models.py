@@ -1,8 +1,10 @@
 import datetime as dt
 import pytz
+import random
 
 from django.db import models
 from django.db.models import Sum
+from django.core.exceptions import ObjectDoesNotExist
 
 DON_RELEASE = dt.datetime(year=2020, month=11, day=16)
 
@@ -115,6 +117,18 @@ class Character(models.Model):
         if not dry_run:
             award.save()
 
+    @classmethod
+    def find_character(cls, cname):
+        try:
+            alt_obj = CharacterAlt.objects.get(pk=cname)
+            return True, alt_obj.main
+        except ObjectDoesNotExist:
+            try:
+                character_obj = Character.objects.get(pk=cname)
+                return False, character_obj
+            except ObjectDoesNotExist:
+                return False, None
+
 
 Character._meta.ordering = ['name']
 
@@ -172,6 +186,72 @@ class DkpSpecialAward(models.Model):
         return '{} {}on {} {}'.format(self.value, notes_str, time_str, attendance_str)
 
 
+class Auction(models.Model):
+    """ Represents the raw bid data for an auction """
+    fingerprint = models.CharField(max_length=64, unique=True)
+    time = models.DateTimeField()
+    item_name = models.CharField(max_length=200)
+    item_count = models.IntegerField(default=1)
+    corrected = models.BooleanField(default=False)
+
+    def __str__(self):
+        time_str = self.time.astimezone(pytz.timezone(
+            'US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
+        return 'auction for {}x{} on {}'.format(self.item_name, self.item_count, time_str)
+
+    def process_bids(self, bids):
+        warnings = []
+        for bid in bids:
+            is_alt, char = Character.find_character(bid['name'])
+            dkp = char.current_dkp()
+            attendance = char.attendance(30)
+            if is_alt or bid['tag'] == 'ALT':
+                bid['tag'] = 'ALT'
+                dkp = char.current_alt_dkp()
+            elif char.status != 'MN' and bid['tag'] not in ['INA', 'FNF', 'Recruit']:
+                warnings.append('{} bid with tag "{}" but is registered as "{}"'.format(
+                    bid['name'], bid['tag'], char.status))
+
+            if dkp < int(bid['bid']):
+                warnings.append('{} bid {} dkp but only has {} on the site'.format(
+                    bid['name'], bid['bid'], dkp
+                ))
+
+            AuctionBid(
+                auction=self, bid=bid['bid'], tag=bid['tag'], character=char, dkp_snapshot=dkp, att_snapshot=attendance
+            ).save()
+        return warnings
+
+    def determine_winners(self):
+        def ordering(bid):
+            char = bid.character
+            max_bid = bid.bid
+            if bid.tag == 'ALT':
+                max_bid = min(max_bid, 5)
+            if bid.tag in ['INA', 'Recruit', 'FNF']:
+                max_bid = min(max_bid, 10)
+            return max_bid, bid.bid, bid.dkp_snapshot, bid.att_snapshot
+
+        bids = [b for b in self.auctionbid_set.all()]
+        sorting_criteria = {b: ordering(b) for b in bids}
+        random.shuffle(bids)
+
+        return sorted(bids, key=lambda b: sorting_criteria[b], reverse=True)[0:self.item_count]
+
+
+class AuctionBid(models.Model):
+    """ Represents a bid in an auction """
+    auction = models.ForeignKey(Auction, on_delete=models.CASCADE)
+    bid = models.IntegerField()
+    tag = models.CharField(max_length=8)
+    character = models.ForeignKey(Character,  on_delete=models.CASCADE)
+    dkp_snapshot = models.IntegerField()
+    att_snapshot = models.FloatField()
+
+    def __str__(self):
+        return '{} bid {} on {}'.format(self.auction.item_name, self.bid, self.character)
+
+
 class Purchase(models.Model):
     """ Represents a character spending DKP for an item"""
     character = models.ForeignKey(Character, on_delete=models.CASCADE)
@@ -180,6 +260,8 @@ class Purchase(models.Model):
     time = models.DateTimeField(default=dt.datetime.utcnow)
     notes = models.TextField(default="", blank=True)
     is_alt = models.BooleanField(default=False, null=True)
+    auction = models.ForeignKey(
+        Auction, blank=True, null=True, on_delete=models.SET_NULL)
 
     def character_display(self):
         return self.character.name+"'s alt" if self.is_alt else self.character.name
