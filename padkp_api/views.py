@@ -76,6 +76,7 @@ class ResolveAuction(viewsets.ViewSet):
                     value=winner.bid,
                     time=auc.time,
                     is_alt=winner.tag == 'ALT',
+                    auction=auc
                 ).save()
                 char_name = winner.character.name
                 if winner.tag == 'ALT':
@@ -98,10 +99,55 @@ class ResolveAuction(viewsets.ViewSet):
 
 class CorrectAuction(viewsets.ViewSet):
     """ submit a set of winners to override auction result """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request):
+        fingerprint = request.data['fingerprint']
+        bids = request.data['bids']
+
+        try:
+            auction, = models.Auction.objects.filter(fingerprint=fingerprint)
+        except ObjectDoesNotExist:
+            return Response('Auction not found that matches fingerprint', status=status.HTTP_400_BAD_REQUEST)
+
+        models.Purchase.objects.filter(auction=auction).delete()
+        for bid in bids:
+            is_alt, char = models.Character.find_character(bid['name'])
+            models.Purchase(
+                character=char,
+                item_name=auction.item_name,
+                value=bid['bid'],
+                time=auction.time,
+                is_alt=is_alt or (bid['tag'] == 'ALT'),
+                auction=auction
+            ).save()
+        auction.corrected = True
+        auction.save()
+        return Response('Auction corrected', status=status.HTTP_200_OK)
 
 
 class CancelAuction(viewsets.ViewSet):
     """ submit the fingerprint of an auction to cancel """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request):
+        fingerprint = request.data['fingerprint']
+
+        try:
+            auction, = models.Auction.objects.filter(fingerprint=fingerprint)
+        except ObjectDoesNotExist:
+            return Response('Auction not found that matches fingerprint', status=status.HTTP_400_BAD_REQUEST)
+
+        cutoff = auction.time + dt.timedelta(hours=2)
+        if dt.datetime.now(dt.timezone.utc) > cutoff:
+            return Response('Auction is more than two hours old', status=status.HTTP_400_BAD_REQUEST)
+
+        models.Purchase.objects.filter(auction=auction).delete()
+        auction.delete()
+
+        return Response('Auction canceled', status=status.HTTP_200_OK)
 
 
 class UploadRaidDump(viewsets.ViewSet):

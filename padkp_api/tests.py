@@ -2,11 +2,195 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from django.contrib.auth.models import User
 from django.test import TestCase
 from padkp_show.models import Character, RaidDump, CharacterAlt, Purchase, Auction, AuctionBid
-from .views import Tiebreak, ChargeDKP, ResolveAuction
+from .views import Tiebreak, ChargeDKP, ResolveAuction, CorrectAuction, CancelAuction
 from django.utils import timezone
 import json
 import hashlib
 import datetime as dt
+
+
+class CorrectAuctionTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='robert', email='robert@…', password='top_secret')
+        char1 = Character.objects.create(name='Lancegar', status='MN')
+        CharacterAlt.objects.create(name='Seped', main=char1)
+        char2 = Character.objects.create(name='Quaff', status='MN')
+        char3 = Character.objects.create(name='Quaff2', status='MN')
+        char4 = Character.objects.create(name='LowBid', status='MN')
+        char5 = Character.objects.create(name='RecruitBid', status='Recruit')
+        Character.objects.create(name='Bid', status='MN')
+        time = timezone.now()
+        dump = RaidDump(value=20, attendance_value=1, time=time)
+        dump.save()
+        dump.characters_present.set([char1, char2, char3, char4, char5])
+
+        dump = RaidDump(value=0, attendance_value=1, time=time)
+        dump.save()
+        dump.characters_present.set([char1, char3])
+
+    def test_single_auction_correction_only(self):
+        bids = [{'name': 'Lancegar', 'bid': '7', 'tag': ''},
+                {'name': 'Quaff', 'bid': '6', 'tag': ''},
+                {'name': 'LowBid', 'bid': '2', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 1
+        time = dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        rdata = {'bids': bids, 'item_count': item_count, 'item_name': item_name,
+                 'fingerprint': 'testfingerprint', 'time': time}
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = ResolveAuction.as_view({'post': 'create'})
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+
+        bids = [{'name': 'Quaff', 'bid': '6', 'tag': ''}]
+        rdata = {'bids': bids, 'fingerprint': 'testfingerprint'}
+        request = factory.post('/api/correct_auction/', rdata, format='json')
+        force_authenticate(request, user=self.user)
+        view = CorrectAuction.as_view({'post': 'create'})
+        response = view(request)
+        response.render()
+
+        data = eval(response.content)
+        char, = Character.objects.filter(name='Quaff')
+        lance, = Character.objects.filter(name='Lancegar')
+        purchase, = Purchase.objects.filter(character=char, value=6)
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(data, 'Auction corrected')
+        self.assertEqual(char.current_dkp(), 14)
+        self.assertEqual(lance.current_dkp(), 20)
+        self.assertEqual(len(auction.auctionbid_set.all()), 3)
+        self.assertEqual(auction, purchase.auction)
+
+    def test_single_auction_multiple_correction(self):
+        bids = [{'name': 'Seped', 'bid': '2', 'tag': ''},
+                {'name': 'Quaff', 'bid': '6', 'tag': ''},
+                {'name': 'LowBid', 'bid': '7', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 2
+        time = dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        rdata = {'bids': bids, 'item_count': item_count, 'item_name': item_name,
+                 'fingerprint': 'testfingerprint', 'time': time}
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = ResolveAuction.as_view({'post': 'create'})
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+
+        bids = [{'name': 'Quaff', 'bid': '6', 'tag': ''},
+                {'name': 'Seped', 'bid': '7', 'tag': ''}]
+        rdata = {'bids': bids, 'fingerprint': 'testfingerprint'}
+        request = factory.post('/api/correct_auction/', rdata, format='json')
+        force_authenticate(request, user=self.user)
+        view = CorrectAuction.as_view({'post': 'create'})
+        response = view(request)
+        response.render()
+
+        data = eval(response.content)
+        char, = Character.objects.filter(name='LowBid')
+        lance, = Character.objects.filter(name='Lancegar')
+        quaff, = Character.objects.filter(name='Quaff')
+        purchase, = Purchase.objects.filter(
+            character=lance, value=7, is_alt=True)
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(data, 'Auction corrected')
+        self.assertEqual(char.current_dkp(), 20)
+        self.assertEqual(quaff.current_dkp(), 14)
+        self.assertEqual(lance.current_alt_dkp(), 13)
+        self.assertEqual(len(auction.auctionbid_set.all()), 3)
+        self.assertEqual(auction, purchase.auction)
+        self.assertTrue(auction.corrected)
+
+
+class CancelAuctionTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='robert', email='robert@…', password='top_secret')
+        char1 = Character.objects.create(name='Lancegar', status='MN')
+        CharacterAlt.objects.create(name='Seped', main=char1)
+        char2 = Character.objects.create(name='Quaff', status='MN')
+        char3 = Character.objects.create(name='Quaff2', status='MN')
+        char4 = Character.objects.create(name='LowBid', status='MN')
+        char5 = Character.objects.create(name='RecruitBid', status='Recruit')
+        Character.objects.create(name='Bid', status='MN')
+        time = timezone.now()
+        dump = RaidDump(value=20, attendance_value=1, time=time)
+        dump.save()
+        dump.characters_present.set([char1, char2, char3, char4, char5])
+
+        dump = RaidDump(value=0, attendance_value=1, time=time)
+        dump.save()
+        dump.characters_present.set([char1, char3])
+
+    def test_cancel_failing_on_old_auctions(self):
+        bids = [{'name': 'Lancegar', 'bid': '7', 'tag': ''},
+                {'name': 'Quaff', 'bid': '6', 'tag': ''},
+                {'name': 'LowBid', 'bid': '2', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 1
+        time = (dt.datetime.utcnow() - dt.timedelta(hours=3)
+                ).strftime('%Y-%m-%dT%H:%M:%SZ')
+        rdata = {'bids': bids, 'item_count': item_count, 'item_name': item_name,
+                 'fingerprint': 'testfingerprint', 'time': time}
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = ResolveAuction.as_view({'post': 'create'})
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+
+        rdata = {'fingerprint': 'testfingerprint'}
+        request = factory.post('/api/cancel_auction/', rdata, format='json')
+        force_authenticate(request, user=self.user)
+        view = CancelAuction.as_view({'post': 'create'})
+        response = view(request)
+        response.render()
+
+        data = eval(response.content)
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(data, 'Auction is more than two hours old')
+        self.assertIsNotNone(auction)
+
+    def test_auction_multiple_canceled(self):
+        bids = [{'name': 'Seped', 'bid': '2', 'tag': ''},
+                {'name': 'Quaff', 'bid': '6', 'tag': ''},
+                {'name': 'LowBid', 'bid': '7', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 2
+        time = (dt.datetime.utcnow() - dt.timedelta(hours=1)
+                ).strftime('%Y-%m-%dT%H:%M:%SZ')
+        rdata = {'bids': bids, 'item_count': item_count, 'item_name': item_name,
+                 'fingerprint': 'testfingerprint', 'time': time}
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = ResolveAuction.as_view({'post': 'create'})
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+
+        rdata = {'fingerprint': 'testfingerprint'}
+        request = factory.post('/api/cancel_auction/', rdata, format='json')
+        force_authenticate(request, user=self.user)
+        view = CancelAuction.as_view({'post': 'create'})
+        response = view(request)
+        response.render()
+
+        data = eval(response.content)
+        auctions = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        abids = AuctionBid.objects.all()
+        purchases = Purchase.objects.filter(auction__isnull=False)
+        char, = Character.objects.filter(name='LowBid')
+
+        self.assertEqual(data, 'Auction canceled')
+        self.assertEqual(len(auctions), 0)
+        self.assertEqual(len(abids), 0)
+        self.assertEqual(len(purchases), 0)
+        self.assertEqual(char.current_dkp(), 20)
 
 
 class ResolveAuctionTests(TestCase):
@@ -59,11 +243,13 @@ class ResolveAuctionTests(TestCase):
         response.render()
         data = eval(response.content)
         char, = Character.objects.filter(name='Lancegar')
+        purchase, = Purchase.objects.filter(character=char, value=7)
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
             data['message'], 'Test Item awarded to - Lancegar for 7')
         self.assertEqual(char.current_dkp(), 13)
         self.assertEqual(len(auction.auctionbid_set.all()), 3)
+        self.assertEqual(auction, purchase.auction)
 
     def test_warnings_on_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '21', 'tag': ''},
