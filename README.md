@@ -17,6 +17,11 @@ Simple DKP display and CRUD operations
   * py manage.py runserver
 * login to localhost:8000/admin
 
+##Deploying Migrations
+* connect to server
+* py manage.py makemigrations
+* py manage.py migrations
+
 ##Running Commands
 * py manage.py command_name
 

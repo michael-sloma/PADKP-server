@@ -2,8 +2,8 @@ from rest_framework.test import APIRequestFactory, force_authenticate
 from django.contrib.auth.models import User
 from django.test import TestCase
 from padkp_show.models import Character, RaidDump, CharacterAlt, Purchase, Auction, AuctionBid
-from .views import Tiebreak, ChargeDKP, ResolveAuction, CorrectAuction, CancelAuction
 from django.utils import timezone
+from django.urls import resolve
 import json
 import hashlib
 import datetime as dt
@@ -39,9 +39,10 @@ class CorrectAuctionTests(TestCase):
         time = dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
         rdata = {'bids': bids, 'item_count': item_count, 'item_name': item_name,
                  'fingerprint': 'testfingerprint', 'time': time}
+        # view = ResolveAuction.as_view({'post': 'create'})
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
@@ -50,7 +51,7 @@ class CorrectAuctionTests(TestCase):
         rdata = {'bids': bids, 'fingerprint': 'testfingerprint'}
         request = factory.post('/api/correct_auction/', rdata, format='json')
         force_authenticate(request, user=self.user)
-        view = CorrectAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
         response = view(request)
         response.render()
 
@@ -76,7 +77,7 @@ class CorrectAuctionTests(TestCase):
                  'fingerprint': 'testfingerprint', 'time': time}
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
@@ -86,7 +87,7 @@ class CorrectAuctionTests(TestCase):
         rdata = {'bids': bids, 'fingerprint': 'testfingerprint'}
         request = factory.post('/api/correct_auction/', rdata, format='json')
         force_authenticate(request, user=self.user)
-        view = CorrectAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
         response = view(request)
         response.render()
 
@@ -139,7 +140,7 @@ class CancelAuctionTests(TestCase):
                  'fingerprint': 'testfingerprint', 'time': time}
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
@@ -147,7 +148,7 @@ class CancelAuctionTests(TestCase):
         rdata = {'fingerprint': 'testfingerprint'}
         request = factory.post('/api/cancel_auction/', rdata, format='json')
         force_authenticate(request, user=self.user)
-        view = CancelAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
         response = view(request)
         response.render()
 
@@ -168,7 +169,7 @@ class CancelAuctionTests(TestCase):
                  'fingerprint': 'testfingerprint', 'time': time}
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
@@ -176,7 +177,7 @@ class CancelAuctionTests(TestCase):
         rdata = {'fingerprint': 'testfingerprint'}
         request = factory.post('/api/cancel_auction/', rdata, format='json')
         force_authenticate(request, user=self.user)
-        view = CancelAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
         response = view(request)
         response.render()
 
@@ -236,7 +237,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -259,7 +260,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -281,7 +282,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -300,7 +301,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -319,7 +320,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -338,7 +339,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -358,7 +359,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -380,10 +381,9 @@ class ResolveAuctionTests(TestCase):
         item_count = 1
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
-        view = ResolveAuction.as_view({'post': 'create'})
-
         request = factory.post('/api/resolve_auction/', rdata, format='json')
         force_authenticate(request, user=self.user)
+        view = resolve(request.get_full_path()).func
         response = view(request)
         response.render()
 
@@ -411,7 +411,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -434,7 +434,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -456,7 +456,7 @@ class ResolveAuctionTests(TestCase):
         rdata = self.build_auction_json(bids, item_count, item_name)
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
-        view = ResolveAuction.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -501,7 +501,7 @@ class TiebreakTests(TestCase):
         factory = APIRequestFactory()
         request = factory.post(
             '/api/tiebreak/', {'characters': ['Lancegar', 'Quaff']}, format='json')
-        view = Tiebreak.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -514,7 +514,7 @@ class TiebreakTests(TestCase):
         factory = APIRequestFactory()
         request = factory.post(
             '/api/tiebreak/', {'characters': ['Quaff2', 'Quaff']}, format='json')
-        view = Tiebreak.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -529,7 +529,7 @@ class TiebreakTests(TestCase):
         factory = APIRequestFactory()
         request = factory.post(
             '/api/tiebreak/', {'characters': ["Lancegar's alt", 'Quaff']}, format='json')
-        view = Tiebreak.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -544,7 +544,7 @@ class TiebreakTests(TestCase):
         factory = APIRequestFactory()
         request = factory.post(
             '/api/tiebreak/', {'characters': ['Seped\'s alt', 'Quaff']}, format='json')
-        view = Tiebreak.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -559,7 +559,7 @@ class TiebreakTests(TestCase):
         factory = APIRequestFactory()
         request = factory.post(
             '/api/tiebreak/', {'characters': ['Seped', 'Quaff']}, format='json')
-        view = Tiebreak.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -595,7 +595,7 @@ class ChargeDKPTests(TestCase):
         }
         request = factory.post(
             '/api/charge_dkp/', raw_request, format='json')
-        view = ChargeDKP.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -618,7 +618,7 @@ class ChargeDKPTests(TestCase):
         }
         request = factory.post(
             '/api/charge_dkp/', raw_request, format='json')
-        view = ChargeDKP.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
@@ -641,7 +641,7 @@ class ChargeDKPTests(TestCase):
         }
         request = factory.post(
             '/api/charge_dkp/', raw_request, format='json')
-        view = ChargeDKP.as_view({'post': 'create'})
+        view = resolve(request.get_full_path()).func
 
         force_authenticate(request, user=self.user)
         response = view(request)
