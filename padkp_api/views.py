@@ -94,8 +94,6 @@ class ResolveAuction(viewsets.ViewSet):
         except Exception:
             return Response(traceback.format_exc(), status=status.HTTP_400_BAD_REQUEST)
 
-        return Response('Raid dump upload successful', status=status.HTTP_200_OK)
-
 
 class CorrectAuction(viewsets.ViewSet):
     """ submit a set of winners to override auction result """
@@ -119,7 +117,7 @@ class CorrectAuction(viewsets.ViewSet):
                 item_name=auction.item_name,
                 value=bid['bid'],
                 time=auction.time,
-                is_alt=is_alt or (bid['tag'] == 'ALT'),
+                is_alt=is_alt,
                 auction=auction
             ).save()
         auction.corrected = True
