@@ -112,6 +112,8 @@ class CorrectAuction(viewsets.ViewSet):
         models.Purchase.objects.filter(auction=auction).delete()
         for bid in bids:
             is_alt, char = models.Character.find_character(bid['name'])
+            if not char:
+                return Response('Could not find character:{}'.format(bid['name']), status=status.HTTP_400_BAD_REQUEST)
             models.Purchase(
                 character=char,
                 item_name=auction.item_name,

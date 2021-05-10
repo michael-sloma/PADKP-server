@@ -203,6 +203,10 @@ class Auction(models.Model):
         warnings = []
         for bid in bids:
             is_alt, char = Character.find_character(bid['name'])
+            if not char:
+                warnings.append(
+                    'Received bid for unknown character: {}'.format(bid['name']))
+                continue
             dkp = char.current_dkp()
             attendance = char.attendance(30)
             if is_alt or bid['tag'] == 'ALT':

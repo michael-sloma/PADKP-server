@@ -254,7 +254,8 @@ class ResolveAuctionTests(TestCase):
 
     def test_warnings_on_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '21', 'tag': ''},
-                {'name': 'RecruitBid', 'bid': '6', 'tag': ''}]
+                {'name': 'RecruitBid', 'bid': '6', 'tag': ''},
+                {'name': 'NotRealBidder', 'bid': '6', 'tag': ''}]
         item_name = 'Test Item'
         item_count = 1
         rdata = self.build_auction_json(bids, item_count, item_name)
@@ -269,10 +270,13 @@ class ResolveAuctionTests(TestCase):
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], 'Test Item awarded to - Lancegar for 21')
+        self.assertEqual(len(data['warnings']), 3)
         self.assertEqual(
             data['warnings'][0], 'Lancegar bid 21 dkp but only has 20 on the site')
         self.assertEqual(
             data['warnings'][1], 'RecruitBid bid with tag "" but is registered as "Recruit"')
+        self.assertEqual(
+            data['warnings'][2], 'Received bid for unknown character: NotRealBidder')
 
     def test_fnf_cutoff_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '11', 'tag': ''},
