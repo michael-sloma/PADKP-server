@@ -239,8 +239,18 @@ class Auction(models.Model):
         bids = [b for b in self.auctionbid_set.all()]
         sorting_criteria = {b: ordering(b) for b in bids}
         random.shuffle(bids)
+        winners_in_order = sorted(
+            bids, key=lambda b: sorting_criteria[b], reverse=True)
+        tie_losers = []
+        if len(winners_in_order) > self.item_count:  # More bidders than items to hand out
+            i = self.item_count
+            while winners_in_order[i-1].bid == winners_in_order[i].bid:
+                tie_losers.append(winners_in_order[i].character.name)
+                i += 1
+                if len(winners_in_order) == i:
+                    break
 
-        return sorted(bids, key=lambda b: sorting_criteria[b], reverse=True)[0:self.item_count]
+        return [tie_losers, winners_in_order[0:self.item_count]]
 
 
 class AuctionBid(models.Model):

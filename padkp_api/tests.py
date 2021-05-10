@@ -405,6 +405,30 @@ class ResolveAuctionTests(TestCase):
             data['message'], 'Another Item awarded to - Lancegar for 7')
         self.assertEqual(char.current_dkp(), 6)
 
+    def test_tie_message_format(self):
+        bids = [{'name': 'Lancegar', 'bid': '15', 'tag': ''},
+                {'name': 'Quaff', 'bid': '15', 'tag': ''},
+                {'name': 'RecruitBid', 'bid': '15', 'tag': ''},
+                {'name': 'LowBid', 'bid': '14', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 1
+        rdata = self.build_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        lance, = Character.objects.filter(name='Lancegar')
+        quaff, = Character.objects.filter(name='Quaff')
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(
+            data['message'], 'Test Item awarded to - Lancegar for 15 - Quaff, RecruitBid Lost the tie')
+        self.assertEqual(lance.current_dkp(), 5)
+        self.assertEqual(len(auction.auctionbid_set.all()), 2)
+
     def test_multi_item_complicated_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '15', 'tag': ''},
                 {'name': 'Quaff', 'bid': '15', 'tag': ''},

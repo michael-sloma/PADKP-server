@@ -69,7 +69,8 @@ class ResolveAuction(viewsets.ViewSet):
 
             warnings = auc.process_bids(bids)
             winners = []
-            for winner in auc.determine_winners():
+            tied, winning_bids = auc.determine_winners()
+            for winner in winning_bids:
                 models.Purchase(
                     character=winner.character,
                     item_name=auc.item_name,
@@ -84,9 +85,14 @@ class ResolveAuction(viewsets.ViewSet):
                 winners.append('{} for {}'.format(char_name, winner.bid))
             while len(winners) < auc.item_count:
                 winners.append('Rot')
+            if len(tied) == 0:
+                message = '{} awarded to - {}'.format(
+                    item_name, ', '.join(winners))
+            else:
+                message = '{} awarded to - {} - {} Lost the tie'.format(
+                    item_name, ', '.join(winners), ', '.join(tied))
             result = {
-                'message': '{} awarded to - {}'.format(
-                    item_name, ', '.join(winners)),
+                'message': message,
                 'warnings': warnings
             }
             return Response(result, status=status.HTTP_200_OK)
