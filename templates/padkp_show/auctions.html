@@ -1,0 +1,46 @@
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/css/bootstrap.min.css">
+<link id="dark-theme-style" rel="stylesheet" />
+
+<body>
+  {% include "padkp_show/header.html" %}
+  <div class="container-fluid">
+    <p>
+      {% if auction.item_count > 1 %}
+        <h1>{{ auction.item_name }} x{{auction.item_count}}- {{ auction.time }}</h1>
+      {% else %}
+        <h1>{{ auction.item_name }} - {{ auction.time }}</h1>
+      {% endif %}
+      {% if auction.corrected %} <p>This auction was manually awarded</p> {% endif %}
+    </p>
+
+    <p>Winners:<br>
+    <ul style="list-style-type:none;">
+      {% for purchase in purchases %}
+        <li>
+          {{purchase.character}} {{ purchase.value}} {% if purchase.is_alt %}Alt {% endif %}DKP
+        </li>
+      {% endfor %}
+    </ul>
+    </p>
+    <p>All Bids:<br>
+      <table id="all_bids" class="table table-sm table-striped" style="width:600px; margin-left:25px">
+        <thead>
+          <tr>
+            <th>Character</th>
+            <th>Bid</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for bid in bids %}
+          <tr>
+            <td><a href="/{{bid.character}}">{{bid.character}}</a></td>
+            <td>{{bid.bid}}</td>
+            <td>{{bid.tag | default:"Main"}}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </p>
+  </div>
+</body>

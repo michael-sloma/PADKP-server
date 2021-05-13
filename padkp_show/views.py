@@ -7,7 +7,7 @@ from django.template import loader
 from rest_framework import viewsets, routers
 
 from django.db.models import Sum
-from .models import Purchase, Character, RaidDump, DkpSpecialAward, CharacterAlt
+from .models import Purchase, Character, RaidDump, DkpSpecialAward, CharacterAlt, Auction, AuctionBid
 from .models import CasualPurchase, CasualCharacter, CasualRaidDump, CasualDkpSpecialAward
 from .models import DON_RELEASE
 
@@ -55,7 +55,7 @@ def attendance_table(request):
 
     dumps = RaidDump.objects.values('characters_present').annotate(
         attendance_value=Sum('attendance_value'))
-    total_earned = {x['characters_present']: x['attendance_value'] for x in dumps}
+    total_earned = {x['characters_present']                    : x['attendance_value'] for x in dumps}
 
     extra_awards = DkpSpecialAward.objects.values(
         'character').annotate(attendance_value=Sum('attendance_value'))
@@ -83,6 +83,20 @@ def attendance_table(request):
     extra = {'total_dumps': total_dumps,
              'total_earned': total_earned, 'total_extra': total_extra}
     return HttpResponse(template.render({'records': result, 'extra': extra}, request))
+
+
+def auctions(request, auction_id):
+    template = loader.get_template('padkp_show/auctions.html')
+    auction = Auction.objects.get(id=auction_id)
+    purchases = Purchase.objects.filter(auction=auction.id).order_by('-value')
+    bids = auction.auctionbid_set.all().order_by('-bid')
+
+    context = {'auction': auction,
+               'purchases': purchases,
+               'bids': bids,
+               }
+
+    return HttpResponse(template.render(context, request))
 
 
 def character_dkp(request, character):

@@ -15,4 +15,5 @@ urlpatterns = [
     path('rules/', views.rules, name='rules'),
     path('discord/', views.discord, name='discord'),
     path('<slug:character>/', views.character_dkp, name='dkp'),
+    path('auctions/<int:auction_id>', views.auctions, name='auctions'),
 ]

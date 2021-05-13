@@ -30,7 +30,11 @@
       <tbody>
         {% for record in records %}
         <tr>
-          <td>{{record.item_name}}</td>
+          {% if record.auction %}
+            <td><a href="/auctions/{{record.auction.id}}">{{record.item_name}}</a></td>
+          {% else %}
+            <td>{{record.item_name}}</td>
+          {% endif %}
           <td><a href="/{{record.character}}">{{record.character}}</a></td>
           <td>{{record.time | date:'Y-m-d'}}</td>
           <td>{{record.value}}</td>

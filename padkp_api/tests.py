@@ -39,7 +39,7 @@ class CorrectAuctionTests(TestCase):
         time = dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
         rdata = {'bids': bids, 'item_count': item_count, 'item_name': item_name,
                  'fingerprint': 'testfingerprint', 'time': time}
-        # view = ResolveAuction.as_view({'post': 'create'})
+
         factory = APIRequestFactory()
         request = factory.post('/api/resolve_auction/', rdata, format='json')
         view = resolve(request.get_full_path()).func
@@ -679,3 +679,5 @@ class ChargeDKPTests(TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(self.char1.current_dkp(), 20)
         self.assertEqual(self.char1.current_alt_dkp(), 15)
+
+# %%
