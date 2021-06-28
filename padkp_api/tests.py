@@ -427,7 +427,7 @@ class ResolveAuctionTests(TestCase):
         self.assertEqual(
             data['message'], 'Test Item awarded to - Lancegar for 15 - Quaff, RecruitBid Lost the tie')
         self.assertEqual(lance.current_dkp(), 5)
-        self.assertEqual(len(auction.auctionbid_set.all()), 2)
+        self.assertEqual(len(auction.auctionbid_set.all()), 4)
 
     def test_multi_item_complicated_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '15', 'tag': ''},
@@ -476,6 +476,26 @@ class ResolveAuctionTests(TestCase):
         self.assertEqual(lance.current_dkp(), 5)
         self.assertEqual(quaff.current_dkp(), 5)
         self.assertEqual(len(auction.auctionbid_set.all()), 2)
+
+    def test_zero_bid_auction(self):
+        bids = [{'name': 'Lancegar', 'bid': '0', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 1
+        rdata = self.build_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        lance, = Character.objects.filter(name='Lancegar')
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(
+            data['message'], 'Test Item awarded to - Rot')
+        self.assertEqual(lance.current_dkp(), 20)
+        self.assertEqual(len(auction.auctionbid_set.all()), 0)
 
     def test_no_bid_auction(self):
         bids = []

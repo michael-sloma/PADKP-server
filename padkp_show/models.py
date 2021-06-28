@@ -202,6 +202,8 @@ class Auction(models.Model):
     def process_bids(self, bids):
         warnings = []
         for bid in bids:
+            if int(bid['bid']) == 0:
+                continue
             is_alt, char = Character.find_character(bid['name'])
             if not char:
                 warnings.append(
