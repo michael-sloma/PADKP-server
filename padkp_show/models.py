@@ -119,13 +119,15 @@ class Character(models.Model):
 
     @classmethod
     def find_character(cls, cname):
+        new_name = cname.replace("'s alt", "")
+        is_alt = new_name != cname
         try:
-            alt_obj = CharacterAlt.objects.get(pk=cname)
+            alt_obj = CharacterAlt.objects.get(pk=new_name)
             return True, alt_obj.main
         except ObjectDoesNotExist:
             try:
-                character_obj = Character.objects.get(pk=cname)
-                return False, character_obj
+                character_obj = Character.objects.get(pk=new_name)
+                return is_alt, character_obj
             except ObjectDoesNotExist:
                 return False, None
 

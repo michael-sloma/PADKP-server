@@ -66,6 +66,43 @@ class CorrectAuctionTests(TestCase):
         self.assertEqual(len(auction.auctionbid_set.all()), 3)
         self.assertEqual(auction, purchase.auction)
 
+    def test_single_auction_correction_for_alt(self):
+        bids = [{'name': 'Lancegar', 'bid': '7', 'tag': ''},
+                {'name': 'Quaff', 'bid': '6', 'tag': ''},
+                {'name': 'LowBid', 'bid': '2', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 1
+        time = dt.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        rdata = {'bids': bids, 'item_count': item_count, 'item_name': item_name,
+                 'fingerprint': 'testfingerprint', 'time': time}
+
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+
+        bids = [{'name': 'Quaff\'s alt', 'bid': '6'}]
+        rdata = {'bids': bids, 'fingerprint': 'testfingerprint'}
+        request = factory.post('/api/correct_auction/', rdata, format='json')
+        force_authenticate(request, user=self.user)
+        view = resolve(request.get_full_path()).func
+        response = view(request)
+        response.render()
+
+        data = eval(response.content)
+        char, = Character.objects.filter(name='Quaff')
+        lance, = Character.objects.filter(name='Lancegar')
+        purchase, = Purchase.objects.filter(character=char, value=6)
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(data, 'Auction corrected')
+        self.assertEqual(char.current_dkp(), 20)
+        self.assertEqual(char.current_alt_dkp(), 14)
+        self.assertEqual(lance.current_dkp(), 20)
+        self.assertEqual(len(auction.auctionbid_set.all()), 3)
+        self.assertEqual(auction, purchase.auction)
+
     def test_single_auction_multiple_correction(self):
         bids = [{'name': 'Seped', 'bid': '2', 'tag': ''},
                 {'name': 'Quaff', 'bid': '6', 'tag': ''},
