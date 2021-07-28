@@ -20,7 +20,7 @@ Simple DKP display and CRUD operations
 ##Deploying Migrations
 * connect to server
 * py manage.py makemigrations
-* py manage.py migrations
+* py manage.py migrate
 
 ##Running Commands
 * py manage.py command_name
