@@ -36,7 +36,7 @@ class Command(BaseCommand):
             today = dt.datetime.now().date()
             if char.leave_of_absence:
                 continue
-            if not char.inactive:
+            if not (char.inactive and char.date_inactive):
                 char.inactive = True
                 char.date_inactive = today
                 char.save()
