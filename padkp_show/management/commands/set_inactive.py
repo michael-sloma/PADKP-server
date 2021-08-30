@@ -34,7 +34,9 @@ class Command(BaseCommand):
             name__in=list(characters_raided_last_30))
         for char in characters_to_check_inactive:
             today = dt.datetime.now().date()
-            if not (char.leave_of_absence or char.inactive):
+            if char.leave_of_absence:
+                continue
+            if not char.inactive:
                 char.inactive = True
                 char.date_inactive = today
                 char.save()
