@@ -414,6 +414,29 @@ class ResolveAuctionTests(TestCase):
         self.assertEqual(char.current_alt_dkp(), 7)
         self.assertEqual(bid.tag, 'ALT')
 
+    def test_alt_win_message_when_alt_bids_as_main(self):
+        bids = [{'name': 'Seped', 'bid': '11', 'tag': 'Main'},
+                {'name': 'RecruitBid', 'bid': '5', 'tag': 'Recruit'}]
+        item_name = 'Test Item'
+        item_count = 1
+        rdata = self.build_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        char, = Character.objects.filter(name='Lancegar')
+        bid, = AuctionBid.objects.filter(character=char)
+        self.assertEqual(
+            data['message'], "Test Item awarded to - Lancegar for 11")
+        self.assertEqual(len(data['warnings']), 0)
+        self.assertEqual(char.current_alt_dkp(), 18)
+        self.assertEqual(char.current_dkp(), 9)
+        self.assertEqual(bid.tag, 'Main')
+
     def test_two_auctions_in_a_row_only(self):
         bids = [{'name': 'Lancegar', 'bid': '7', 'tag': ''},
                 {'name': 'Quaff', 'bid': '6', 'tag': ''},

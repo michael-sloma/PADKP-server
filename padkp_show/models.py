@@ -207,6 +207,8 @@ class Auction(models.Model):
             if int(bid['bid']) == 0:
                 continue
             is_alt, char = Character.find_character(bid['name'])
+            if bid['tag'] == 'Main':
+                is_alt = False
             if not char:
                 warnings.append(
                     'Received bid for unknown character: {}'.format(bid['name']))
@@ -256,6 +258,34 @@ class Auction(models.Model):
 
         return [tie_losers, winners_in_order[0:self.item_count]]
 
+
+    def determine_savings(self):
+        def ordering(bid):
+            char = bid.character
+            max_bid = bid.bid
+            if bid.tag == 'ALT':
+                max_bid = min(max_bid, 5)
+            if bid.tag in ['INA', 'Recruit', 'FNF']:
+                max_bid = min(max_bid, 10)
+            return max_bid, bid.bid, bid.dkp_snapshot, bid.att_snapshot
+
+        bids = [b for b in self.auctionbid_set.all()]
+        sorting_criteria = {b: ordering(b) for b in bids}
+        random.shuffle(bids)
+        winners_in_order = sorted(
+            bids, key=lambda b: sorting_criteria[b], reverse=True)
+        tie_losers = []
+        if len(winners_in_order) > self.item_count:  # More bidders than items to hand out
+            i = self.item_count
+            while winners_in_order[i-1].bid == winners_in_order[i].bid:
+                tie_losers.append(winners_in_order[i].character.name)
+                i += 1
+                if len(winners_in_order) == i:                    
+                    break
+        baseline = 0
+        if len(winners_in_order) > self.item_count:
+            baseline = ordering(winners_in_order[self.item_count])[0]
+        return [winners_in_order[0:self.item_count], baseline]
 
 class AuctionBid(models.Model):
     """ Represents a bid in an auction """
