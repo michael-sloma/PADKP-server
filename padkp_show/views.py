@@ -39,7 +39,9 @@ def index(request):
 
     result = []
     for character in Character.objects.all().filter(name__in=total_earned.keys()):
-        if (character.status in ('INA', 'ALT') or character.inactive or character.leave_of_absence) and character.attendance(30) <= 0:
+        if (character.status  == 'INA' or character.inactive) and character.attendance(30) <= 0:
+            continue
+        if character.leave_of_absence or character.status == 'ALT':
             continue
         spent = total_spent.get(character.name, 0)
         earned = total_earned.get(character.name, 0) + \
