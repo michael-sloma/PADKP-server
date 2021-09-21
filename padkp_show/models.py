@@ -107,6 +107,25 @@ class Character(models.Model):
                 award.save()
             return True
 
+    def cap_alt_dkp(self, cap, dry_run=True):
+        current_dkp = self.current_alt_dkp()
+        if current_dkp <= cap:
+            return False
+        else:
+            cap_penalty = cap - current_dkp
+            assert cap_penalty < 0
+            award = Purchase(character=self,
+                             item_name='Alt DKP Cap Adjustment',
+                             value=cap_penalty,
+                             time=dt.datetime.now(),
+                             is_alt=1)
+            print('capping {} at {} dkp (had {})'.format(
+                self.name, cap, current_dkp))
+            if not dry_run:
+                award.save()
+            return True
+
+
     def give_bonus(self, bonus, notes, dry_run=True):
         award = DkpSpecialAward(character=self,
                                 value=bonus,
