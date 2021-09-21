@@ -112,8 +112,8 @@ class Character(models.Model):
         if current_dkp <= cap:
             return False
         else:
-            cap_penalty = cap - current_dkp
-            assert cap_penalty < 0
+            cap_penalty = current_dkp - cap
+            assert cap_penalty > 0
             award = Purchase(character=self,
                              item_name='Alt DKP Cap Adjustment',
                              value=cap_penalty,
