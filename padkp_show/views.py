@@ -74,12 +74,10 @@ def attendance_table(request):
         attendance = '%.1f' % (character.attendance(30))
         if attendance == '0.0':
             continue
-        attendance_90 = '%.1f' % (character.attendance(90))
 
         result.append({'name': character.name, 'character_class': character.character_class,
                        'character_status': character.get_status_display(),
-                       'attendance': attendance,
-                       'attendance_90': attendance_90})
+                       'attendance': attendance})
     result = sorted(result, key=lambda x: float(x['attendance']), reverse=True)
 
     extra = {'total_dumps': total_dumps,
@@ -198,10 +196,22 @@ def discord(request):
 def class_balance_table(request):
     template = loader.get_template('padkp_show/classes.html')
     days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
-    days_ago_90 = dt.datetime.utcnow() - dt.timedelta(days=90)
+    days_ago_15 = dt.datetime.utcnow() - dt.timedelta(days=15)
 
     name_class_map = {
         c.name: c.character_class for c in Character.objects.all()}
+
+    counts = {character_class: 0 for character_class in name_class_map.values()}
+    n_dumps = 0
+
+    for dump in RaidDump.objects.filter(time__gte=days_ago_15):
+        n_dumps += 1
+        for character in dump.characters_present.all():
+            if character.status == 'MN':
+                counts[character.character_class] += 1
+    class_counts_15 = {}
+    for character_class, count in counts.items():
+        class_counts_15[character_class] = '%.1f' % (float(count) / n_dumps)
 
     counts = {character_class: 0 for character_class in name_class_map.values()}
     n_dumps = 0
@@ -215,26 +225,17 @@ def class_balance_table(request):
     for character_class, count in counts.items():
         class_counts_30[character_class] = '%.1f' % (float(count) / n_dumps)
 
-    for dump in RaidDump.objects.filter(time__gte=days_ago_90):
-        n_dumps += 1
-        for character in dump.characters_present.all():
-            if character.status == 'MN':
-                counts[character.character_class] += 1
-    class_counts_90 = {}
-    for character_class, count in counts.items():
-        class_counts_90[character_class] = '%.1f' % (float(count) / n_dumps)
-
     result = []
     for character_class in counts:
         if character_class in ['Shadow', 'Unknown']:
             continue
         result.append({'character_class': character_class,
                        'counts_30': class_counts_30[character_class],
-                       'counts_90': class_counts_90[character_class]}
+                       'counts_15': class_counts_15[character_class]}
                       )
     result = sorted(result, key=lambda record: record['character_class'])
-    totals = {'total_30': sum(float(x['counts_30']) for x in result),
-              'total_90': sum(float(x['counts_90']) for x in result)}
+    totals = {'total_30':  '%.1f' % sum(float(x['counts_30']) for x in result),
+              'total_15':  '%.1f' % sum(float(x['counts_15']) for x in result)}
 
     return HttpResponse(template.render({'records': result, 'totals': totals}, request))
 

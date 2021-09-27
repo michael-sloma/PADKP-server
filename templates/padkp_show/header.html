@@ -8,8 +8,11 @@
         <li {% ifequal request.path "/" %} class="active" {% endifequal %}><a href="/">Home</a></li>
         <li {% ifequal request.path "/items/" %} class="active" {% endifequal %}><a href="/items/">Items</a></li>
         <li {% ifequal request.path "/awards/" %} class="active" {% endifequal %}><a href="/awards/">Awards</a></li>
-        <li {% ifequal request.path "/attendance/" %} class="active" {% endifequal %}><a
-            href="/attendance/">Attendance</a>
+        <li {% ifequal request.path "/attendance/" %} class="active" {% endifequal %}>
+          <a href="/attendance/">Attendance</a>
+        </li>
+        <li {% ifequal request.path "/class_balance/" %} class="active" {% endifequal %}>
+          <a href="/class_balance/">Class Balance</a>
         </li>
         <li><a href="/rules/">Rules</a></li>
         <li><a href="/discord/">Join Our Discord</a></li>
