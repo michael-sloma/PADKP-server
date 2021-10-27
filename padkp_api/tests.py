@@ -760,4 +760,45 @@ class ChargeDKPTests(TestCase):
         self.assertEqual(self.char1.current_dkp(), 20)
         self.assertEqual(self.char1.current_alt_dkp(), 15)
 
+class ResolveFlagsTests(TestCase):
+
+    def setUp(self):
+        self.user = User.objects.create_user(
+            username='robert', email='robert@…', password='top_secret')
+        char1 = Character.objects.create(name='Lancegar', status='MN')
+        CharacterAlt.objects.create(name='Seped', main=char1)
+        char2 = Character.objects.create(name='Quaff', status='MN')
+        char3 = Character.objects.create(name='Quaff2', status='MN')
+        char4 = Character.objects.create(name='LowBid', status='MN')
+        char5 = Character.objects.create(name='RecruitBid', status='Recruit')
+        Character.objects.create(name='Bid', status='MN')
+        time = timezone.now()
+        dump = RaidDump(value=20, attendance_value=1, time=time)
+        dump.save()
+        dump.characters_present.set([char1, char2, char3, char4, char5])
+
+        dump = RaidDump(value=0, attendance_value=1, time=time)
+        dump.save()
+        dump.characters_present.set([char1, char3, char5])
+
+
+    def test_no_flags(self):
+        players = ['Lancegar', 'RecruitBid', 'NotRealBidder', 'Quaff', 'Quaff2']
+        item_name = 'Test Flag'
+        item_count = 3
+        rdata = {'players': players, 'item_name': item_name, 'item_count': item_count}
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_flags/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        self.assertEqual(
+            data['message'], 'Test Flag: Lancegar, Quaff2, RecruitBid')
+        self.assertEqual(
+            data['warnings'][0], 'NotRealBidder not found in system.')
+
+
 # %%

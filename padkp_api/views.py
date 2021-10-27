@@ -102,6 +102,51 @@ class ResolveAuction(viewsets.ViewSet):
             auc.delete()
             return Response(traceback.format_exc(), status=status.HTTP_400_BAD_REQUEST)
 
+class ResolveFlags(viewsets.ViewSet):
+    """ submit a set of bids for resolution """
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request):
+        players = request.data['players']
+        item_name = request.data['item_name']
+        item_count = request.data.get('item_count', 1)
+
+        try:
+            characters = []
+            warnings = []
+
+            for player in players:
+                _, char = models.Character.find_character(player)
+                if not char:
+                    warnings.append('{} not found in system.'.format(player))
+                else:
+                    characters.append(char)
+
+            winners = []
+
+            random.shuffle(characters)
+
+            def att30(char):
+                return char.attendance(30)
+
+            ordered = sorted(characters, key=att30, reverse=True)
+
+            for winner in ordered:
+                winners.append(winner.name)
+
+            message = '{}: {}'.format(
+                    item_name, ', '.join(winners[0:item_count]))
+
+            result = {
+                'message': message,
+                'warnings': warnings
+            }
+            return Response(result, status=status.HTTP_200_OK)
+
+        except Exception:
+            return Response(traceback.format_exc(), status=status.HTTP_400_BAD_REQUEST)
+
 
 class CorrectAuction(viewsets.ViewSet):
     """ submit a set of winners to override auction result """

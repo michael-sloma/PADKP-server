@@ -13,6 +13,7 @@ router.register(r'second_class', views.SecondClassCitizens)
 router.register(r'resolve_auction', views.ResolveAuction, basename='api')
 router.register(r'correct_auction', views.CorrectAuction, basename='api')
 router.register(r'cancel_auction', views.CancelAuction, basename='api')
+router.register(r'resolve_flags', views.ResolveFlags, basename='api')
 
 # Wire up our API using automatic URL routing.
 # Additionally, we include login URLs for the browsable API.
