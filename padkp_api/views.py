@@ -108,7 +108,7 @@ class ResolveFlags(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def create(self, request):
-        players = request.data['players']
+        players = list(set(request.data['players']))
         item_name = request.data['item_name']
         item_count = request.data.get('item_count', 1)
 

@@ -782,8 +782,8 @@ class ResolveFlagsTests(TestCase):
         dump.characters_present.set([char1, char3, char5])
 
 
-    def test_no_flags(self):
-        players = ['Lancegar', 'RecruitBid', 'NotRealBidder', 'Quaff', 'Quaff2']
+    def test_flags(self):
+        players = ['Lancegar', 'Lancegar', 'RecruitBid', 'NotRealBidder', 'Quaff', 'Quaff2']
         item_name = 'Test Flag'
         item_count = 3
         rdata = {'players': players, 'item_name': item_name, 'item_count': item_count}
@@ -795,8 +795,10 @@ class ResolveFlagsTests(TestCase):
         response = view(request)
         response.render()
         data = eval(response.content)
-        self.assertEqual(
-            data['message'], 'Test Flag: Lancegar, Quaff2, RecruitBid')
+        self.assertTrue('Lancegar' in data['message'])
+        self.assertTrue('Quaff2' in data['message'])
+        self.assertTrue('RecruitBid' in data['message'])
+        self.assertEqual(len(data['message'].split(':')[1].split()), 3)
         self.assertEqual(
             data['warnings'][0], 'NotRealBidder not found in system.')
 
