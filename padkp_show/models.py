@@ -242,16 +242,17 @@ class Auction(models.Model):
                     bid['name'], bid['tag'], char.status))
 
             if dkp < int(bid['bid']):
-                warnings.append('{} bid {} dkp but only has {} on the site'.format(
+                warnings.append('{} bid {} dkp but only has {} on the site, lowered their bid'.format(
                     bid['name'], bid['bid'], dkp
                 ))
+                bid['bid'] = dkp
 
             AuctionBid(
                 auction=self, bid=bid['bid'], tag=bid['tag'], character=char, dkp_snapshot=dkp, att_snapshot=attendance
             ).save()
         return warnings
 
-    def determine_winners(self):
+    def determine_winners_english(self):
         def ordering(bid):
             char = bid.character
             max_bid = bid.bid
@@ -275,10 +276,12 @@ class Auction(models.Model):
                 if len(winners_in_order) == i:
                     break
 
-        return [tie_losers, winners_in_order[0:self.item_count]]
+        result = [{'char': w.character, 'bid': w.bid, 'tag': w.tag } for w in winners_in_order[0:self.item_count]]
+
+        return [tie_losers, result]
 
 
-    def determine_savings(self):
+    def determine_winners_vickrey(self):
         def ordering(bid):
             char = bid.character
             max_bid = bid.bid
@@ -294,17 +297,44 @@ class Auction(models.Model):
         winners_in_order = sorted(
             bids, key=lambda b: sorting_criteria[b], reverse=True)
         tie_losers = []
+        result = []
+
+        i = 0
+        while i < self.item_count:
+            if i >= len(winners_in_order):
+                break
+            prev_item = None
+            curr_item = winners_in_order[i]
+            next_item = None
+
+            if i < len(winners_in_order) - 1:
+                next_item = winners_in_order[i+1]
+            if i > 0:
+                prev_item = winners_in_order[i-1]
+
+            if prev_item and prev_item.bid == sorting_criteria[curr_item][1]: # Tie behind
+                result.append({'char': curr_item.character, 'bid': curr_item.bid, 'tag': curr_item.tag })
+            elif next_item and next_item.bid == curr_item.bid: #Tie ahead
+                result.append({'char': curr_item.character, 'bid': curr_item.bid, 'tag': curr_item.tag })
+            elif next_item and sorting_criteria[next_item][0] != sorting_criteria[next_item][1]: #Not a main bid behind this
+                bid = min(sorting_criteria[next_item][0]+1, curr_item.bid)
+                result.append({'char': curr_item.character, 'bid': bid, 'tag': curr_item.tag })
+            elif next_item: #have a following main bid
+                bid = min(next_item.bid+1, curr_item.bid)
+                result.append({'char': curr_item.character, 'bid': bid, 'tag': curr_item.tag })
+            else: # no following bids
+                result.append({'char': curr_item.character, 'bid': 1, 'tag': curr_item.tag })
+            i += 1
+
         if len(winners_in_order) > self.item_count:  # More bidders than items to hand out
             i = self.item_count
             while winners_in_order[i-1].bid == winners_in_order[i].bid:
                 tie_losers.append(winners_in_order[i].character.name)
                 i += 1
-                if len(winners_in_order) == i:                    
+                if len(winners_in_order) == i:
                     break
-        baseline = 0
-        if len(winners_in_order) > self.item_count:
-            baseline = ordering(winners_in_order[self.item_count])[0]
-        return [winners_in_order[0:self.item_count], baseline]
+
+        return [tie_losers, result]
 
 class AuctionBid(models.Model):
     """ Represents a bid in an auction """

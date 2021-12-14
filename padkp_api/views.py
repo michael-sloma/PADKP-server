@@ -14,6 +14,8 @@ from rest_framework.authentication import TokenAuthentication, BasicAuthenticati
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from . import serializers
 from padkp_show import models
 
@@ -61,6 +63,7 @@ class ResolveAuction(viewsets.ViewSet):
         item_name = request.data['item_name']
         item_count = request.data.get('item_count', 1)
         time = request.data['time']
+        auction_type = request.data.get('auction_type', 'vickrey')
 
         try:
             auc = models.Auction(fingerprint=fingerprint, item_name=item_name,
@@ -69,20 +72,27 @@ class ResolveAuction(viewsets.ViewSet):
 
             warnings = auc.process_bids(bids)
             winners = []
-            tied, winning_bids = auc.determine_winners()
+            tied, winning_bids = [1,1]
+            if auction_type == 'vickrey':
+                tied, winning_bids = auc.determine_winners_vickrey()
+            elif auction_type == 'english':
+                tied, winning_bids = auc.determine_winners_english()
+            else:
+                return Response("Invalid auction_type specified, valid options are vickrey, english.", status=status.HTTP_400_BAD_REQUEST)
+
             for winner in winning_bids:
                 models.Purchase(
-                    character=winner.character,
+                    character=winner['char'],
                     item_name=auc.item_name,
-                    value=winner.bid,
+                    value=winner['bid'],
                     time=auc.time,
-                    is_alt=winner.tag == 'ALT',
+                    is_alt=winner['tag'] == 'ALT',
                     auction=auc
                 ).save()
-                char_name = winner.character.name
-                if winner.tag == 'ALT':
+                char_name = winner['char'].name
+                if winner['tag'] == 'ALT':
                     char_name += "'s alt"
-                winners.append('{} for {}'.format(char_name, winner.bid))
+                winners.append('{} for {}'.format(char_name, winner['bid']))
             while len(winners) < auc.item_count:
                 winners.append('Rot')
             if len(tied) == 0:
