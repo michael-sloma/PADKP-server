@@ -865,7 +865,7 @@ class ResolveVickreyAuctionTests(TestCase):
         self.assertEqual(quaff.current_dkp(), 5)
         self.assertEqual(len(auction.auctionbid_set.all()), 2)
 
-    def test_multi_item_with_rot(self):
+    def test_multi_item_without_rot(self):
         bids = [{'name': 'Lancegar', 'bid': '15', 'tag': ''},
                 {'name': 'Quaff', 'bid': '5', 'tag': ''}]
         item_name = 'Test Item'
