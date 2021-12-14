@@ -865,6 +865,29 @@ class ResolveVickreyAuctionTests(TestCase):
         self.assertEqual(quaff.current_dkp(), 5)
         self.assertEqual(len(auction.auctionbid_set.all()), 2)
 
+    def test_multi_item_fnf_not_triggered(self):
+        bids = [{'name': 'Lancegar', 'bid': '10', 'tag': ''},
+                {'name': 'RecruitBid', 'bid': '20', 'tag': 'Recruit'}]
+        item_name = 'Test Item'
+        item_count = 2
+        rdata = self.build_vickrey_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        lance, = Character.objects.filter(name='Lancegar')
+        recruit, = Character.objects.filter(name='RecruitBid')
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(
+            data['message'], 'Test Item awarded to - RecruitBid for 11, Lancegar for 1')
+        self.assertEqual(lance.current_dkp(), 19)
+        self.assertEqual(recruit.current_dkp(), 9)
+        self.assertEqual(len(auction.auctionbid_set.all()), 2)
+
     def test_multi_item_without_rot(self):
         bids = [{'name': 'Lancegar', 'bid': '15', 'tag': ''},
                 {'name': 'Quaff', 'bid': '5', 'tag': ''}]
