@@ -242,10 +242,11 @@ class Auction(models.Model):
                     bid['name'], bid['tag'], char.status))
 
             if dkp < int(bid['bid']):
-                warnings.append('{} bid {} dkp but only has {} on the site, lowered their bid'.format(
+                # warnings.append('{} bid {} dkp but only has {} on the site, lowered their bid'.format(
+                warnings.append('{} bid {} dkp but only has {} on the site'.format(
                     bid['name'], bid['bid'], dkp
                 ))
-                bid['bid'] = dkp
+                # bid['bid'] = dkp
 
             AuctionBid(
                 auction=self, bid=bid['bid'], tag=bid['tag'], character=char, dkp_snapshot=dkp, att_snapshot=attendance

@@ -306,10 +306,10 @@ class ResolveAuctionTests(TestCase):
         data = eval(response.content)
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 20')
+            data['message'], 'Test Item awarded to - Lancegar for 21')
         self.assertEqual(len(data['warnings']), 3)
         self.assertEqual(
-            data['warnings'][0], 'Lancegar bid 21 dkp but only has 20 on the site, lowered their bid')
+            data['warnings'][0], 'Lancegar bid 21 dkp but only has 20 on the site')
         self.assertEqual(
             data['warnings'][1], 'RecruitBid bid with tag "" but is registered as "Recruit"')
         self.assertEqual(
@@ -656,7 +656,7 @@ class ResolveVickreyAuctionTests(TestCase):
             data['message'], 'Test Item awarded to - Lancegar for 7')
         self.assertEqual(len(data['warnings']), 3)
         self.assertEqual(
-            data['warnings'][0], 'Lancegar bid 21 dkp but only has 20 on the site, lowered their bid')
+            data['warnings'][0], 'Lancegar bid 21 dkp but only has 20 on the site')
         self.assertEqual(
             data['warnings'][1], 'RecruitBid bid with tag "" but is registered as "Recruit"')
         self.assertEqual(
