@@ -318,8 +318,12 @@ class Auction(models.Model):
             elif next_item and next_item.bid == curr_item.bid: #Tie ahead
                 result.append({'char': curr_item.character, 'bid': curr_item.bid, 'tag': curr_item.tag })
             elif next_item and sorting_criteria[next_item][0] != sorting_criteria[next_item][1]: #Not a main bid behind this
-                bid = min(sorting_criteria[next_item][0]+1, curr_item.bid)
-                result.append({'char': curr_item.character, 'bid': bid, 'tag': curr_item.tag })
+                if sorting_criteria[next_item][0] != sorting_criteria[curr_item][0]: #both not same tier
+                    bid = min(sorting_criteria[next_item][0]+1, curr_item.bid)
+                    result.append({'char': curr_item.character, 'bid': bid, 'tag': curr_item.tag })
+                else:
+                    bid = min(next_item.bid+1, curr_item.bid)
+                    result.append({'char': curr_item.character, 'bid': bid, 'tag': curr_item.tag })
             elif next_item: #have a following main bid
                 bid = min(next_item.bid+1, curr_item.bid)
                 result.append({'char': curr_item.character, 'bid': bid, 'tag': curr_item.tag })

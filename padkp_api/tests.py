@@ -720,6 +720,46 @@ class ResolveVickreyAuctionTests(TestCase):
         self.assertEqual(len(data['warnings']), 0)
         self.assertEqual(char.current_alt_dkp(), 12)
 
+    def test_alt_win_over_alt_auction(self):
+        bids = [{'name': 'Lancegar', 'bid': '300', 'tag': 'ALT'},
+                {'name': 'RecruitBid', 'bid': '150', 'tag': 'ALT'}]
+        item_name = 'Test Item'
+        item_count = 1
+        rdata = self.build_vickrey_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        char, = Character.objects.filter(name='Lancegar')
+        self.assertEqual(
+            data['message'], "Test Item awarded to - Lancegar's alt for 151")
+        self.assertEqual(len(data['warnings']), 2)
+        self.assertEqual(char.current_alt_dkp(), -133)
+
+    def test_fnf_win_over_alt_auction(self):
+        bids = [{'name': 'Lancegar', 'bid': '300', 'tag': 'ALT'},
+                {'name': 'RecruitBid', 'bid': '150', 'tag': 'Recruit'}]
+        item_name = 'Test Item'
+        item_count = 1
+        rdata = self.build_vickrey_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        char, = Character.objects.filter(name='Lancegar')
+        self.assertEqual(
+            data['message'], "Test Item awarded to - RecruitBid for 6")
+        self.assertEqual(len(data['warnings']), 2)
+        self.assertEqual(char.current_alt_dkp(), 18)
+
     def test_alt_win_message_when_alt_bids(self):
         bids = [{'name': 'Seped', 'bid': '11', 'tag': ''},
                 {'name': 'RecruitBid', 'bid': '5', 'tag': 'Recruit'}]
