@@ -857,6 +857,54 @@ class ResolveVickreyAuctionTests(TestCase):
         self.assertEqual(lance.current_dkp(), 5)
         self.assertEqual(len(auction.auctionbid_set.all()), 4)
 
+    def test_cannot_tie_yourself(self):
+        bids = [{'name': 'Lancegar', 'bid': '26', 'tag': ''},
+                {'name': 'Lancegar', 'bid': '26', 'tag': ''},
+                {'name': 'Quaff', 'bid': '15', 'tag': ''},
+                {'name': 'RecruitBid', 'bid': '15', 'tag': ''},
+                {'name': 'LowBid', 'bid': '14', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 1
+        rdata = self.build_vickrey_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        lance, = Character.objects.filter(name='Lancegar')
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(
+            data['message'], 'Test Item awarded to - Lancegar for 16')
+        self.assertEqual(lance.current_dkp(), 4)
+        self.assertEqual(len(auction.auctionbid_set.all()), 5)
+
+    def test_cannot_tie_yourself_multiitem(self):
+        bids = [{'name': 'Lancegar', 'bid': '26', 'tag': ''},
+                {'name': 'Lancegar', 'bid': '26', 'tag': ''},
+                {'name': 'Quaff', 'bid': '15', 'tag': ''},
+                {'name': 'RecruitBid', 'bid': '15', 'tag': ''},
+                {'name': 'LowBid', 'bid': '14', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 2
+        rdata = self.build_vickrey_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        lance, = Character.objects.filter(name='Lancegar')
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(
+            data['message'], 'Test Item awarded to - Lancegar for 16, Lancegar for 16')
+        self.assertEqual(lance.current_dkp(), -12)
+        self.assertEqual(len(auction.auctionbid_set.all()), 5)
+
     def test_multi_item_complicated_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '15', 'tag': ''},
                 {'name': 'Quaff', 'bid': '15', 'tag': ''},
