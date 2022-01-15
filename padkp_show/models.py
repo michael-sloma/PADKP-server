@@ -300,35 +300,56 @@ class Auction(models.Model):
         tie_losers = []
         result = []
 
+        def determine_bid_value(bids, sorts, target):
+            i = -1
+            while i < len(bids)-1:
+                i += 1
+                curr = bids[i]
+                if curr.character == target.character: # bid is from you as well, doesn't block you.
+                    continue
+                if target.tag == 'Main' or target.tag == '':
+                    if curr.tag == 'ALT': #alt v ina
+                        if sorts[target][0] > 5:
+                            return min(sorts[curr][0]+1, sorts[target][0])
+                        if sorts[curr][0] <= sorts[target][0]:
+                            return min(sorts[curr][0]+1, sorts[target][0])
+                    elif curr.tag == 'Main' or curr.tag == '':
+                        if sorts[curr][0] <= sorts[target][0]: #blocking main vs main
+                            return min(sorts[curr][0]+1, sorts[target][0])
+                    else: #ina
+                        if sorts[target][0] > 10:
+                            return min(sorts[curr][0]+1, sorts[target][0])
+                        if sorts[curr][1] <= sorts[target][0]:
+                            return min(sorts[curr][0]+1, sorts[target][0])
+                elif target.tag == 'ALT':
+                    if curr.tag == 'ALT': #alt v alt
+                        if sorts[curr][1] <= sorts[target][1]:
+                            return min(sorts[curr][1]+1, sorts[target][1])
+                    elif curr.tag == 'Main' or curr.tag == '': #alt v main
+                        if sorts[curr][0] <= sorts[target][0]:
+                            return min(sorts[curr][0]+1, sorts[target][1])
+                    else: #alt vs inactive
+                        if sorts[curr][0] <= sorts[target][0]:
+                            return min(sorts[curr][1]+1, sorts[target][1])
+                else: #inactive
+                    if curr.tag == 'ALT': #alt v ina
+                        if sorts[curr][0] <= sorts[target][0]:
+                            return min(sorts[curr][0]+1, sorts[target][1])
+                    elif curr.tag == 'Main' or curr.tag == '': #main vs ina
+                        if sorts[curr][0] <= sorts[target][0]:
+                            return min(sorts[curr][0]+1, sorts[target][1])
+                    else: #ina vs inactive
+                        if sorts[curr][0] <= sorts[target][0]:
+                            return min(sorts[curr][1]+1, sorts[target][1])
+            return 1
+
         i = 0
         while i < self.item_count:
             if i >= len(winners_in_order):
                 break
-            prev_item = None
-            curr_item = winners_in_order[i]
-            next_item = None
-
-            if i < len(winners_in_order) - 1:
-                next_item = winners_in_order[i+1]
-            if i > 0:
-                prev_item = winners_in_order[i-1]
-
-            if prev_item and prev_item.bid == sorting_criteria[curr_item][1]: # Tie behind
-                result.append({'char': curr_item.character, 'bid': curr_item.bid, 'tag': curr_item.tag })
-            elif next_item and next_item.bid == curr_item.bid: #Tie ahead
-                result.append({'char': curr_item.character, 'bid': curr_item.bid, 'tag': curr_item.tag })
-            elif next_item and sorting_criteria[next_item][0] != sorting_criteria[next_item][1]: #Not a main bid behind this
-                if sorting_criteria[next_item][0] != sorting_criteria[curr_item][0]: #both not same tier
-                    bid = min(sorting_criteria[next_item][0]+1, curr_item.bid)
-                    result.append({'char': curr_item.character, 'bid': bid, 'tag': curr_item.tag })
-                else:
-                    bid = min(next_item.bid+1, curr_item.bid)
-                    result.append({'char': curr_item.character, 'bid': bid, 'tag': curr_item.tag })
-            elif next_item: #have a following main bid
-                bid = min(next_item.bid+1, curr_item.bid)
-                result.append({'char': curr_item.character, 'bid': bid, 'tag': curr_item.tag })
-            else: # no following bids
-                result.append({'char': curr_item.character, 'bid': 1, 'tag': curr_item.tag })
+            curr_bid = winners_in_order[i]
+            bid = determine_bid_value(winners_in_order, sorting_criteria, curr_bid)
+            result.append({'char': curr_bid.character, 'bid': bid, 'tag': curr_bid.tag })
             i += 1
 
         if len(winners_in_order) > self.item_count:  # More bidders than items to hand out

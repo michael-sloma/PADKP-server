@@ -877,7 +877,7 @@ class ResolveVickreyAuctionTests(TestCase):
         lance, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 16')
+            data['message'], 'Test Item awarded to - Lancegar for 16 - Lancegar Lost the tie')
         self.assertEqual(lance.current_dkp(), 4)
         self.assertEqual(len(auction.auctionbid_set.all()), 5)
 
@@ -967,6 +967,7 @@ class ResolveVickreyAuctionTests(TestCase):
         response = view(request)
         response.render()
         data = eval(response.content)
+
         lance, = Character.objects.filter(name='Lancegar')
         recruit, = Character.objects.filter(name='RecruitBid')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
