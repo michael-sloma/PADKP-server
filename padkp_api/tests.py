@@ -877,7 +877,7 @@ class ResolveVickreyAuctionTests(TestCase):
         lance, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 16 - Lancegar Lost the tie')
+            data['message'], 'Test Item awarded to - Lancegar for 16')
         self.assertEqual(lance.current_dkp(), 4)
         self.assertEqual(len(auction.auctionbid_set.all()), 5)
 
@@ -999,6 +999,30 @@ class ResolveVickreyAuctionTests(TestCase):
         self.assertEqual(lance.current_dkp(), 14)
         self.assertEqual(quaff.current_dkp(), 19)
         self.assertEqual(len(auction.auctionbid_set.all()), 2)
+
+    def test_multi_item_self_tie(self):
+        bids = [{'name': 'Lancegar', 'bid': '15', 'tag': ''},
+                {'name': 'Lancegar', 'bid': '15', 'tag': ''},
+                {'name': 'Quaff', 'bid': '16', 'tag': ''}]
+        item_name = 'Test Item'
+        item_count = 2
+        rdata = self.build_vickrey_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        lance, = Character.objects.filter(name='Lancegar')
+        quaff, = Character.objects.filter(name='Quaff')
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(
+            data['message'], 'Test Item awarded to - Quaff for 16, Lancegar for 1')
+        self.assertEqual(lance.current_dkp(), 19)
+        self.assertEqual(quaff.current_dkp(), 4)
+        self.assertEqual(len(auction.auctionbid_set.all()), 3)
 
     def test_zero_bid_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '0', 'tag': ''}]

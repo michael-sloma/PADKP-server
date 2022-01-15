@@ -355,7 +355,8 @@ class Auction(models.Model):
         if len(winners_in_order) > self.item_count:  # More bidders than items to hand out
             i = self.item_count
             while winners_in_order[i-1].bid == winners_in_order[i].bid:
-                tie_losers.append(winners_in_order[i].character.name)
+                if winners_in_order[i-1].character != winners_in_order[i].character:
+                    tie_losers.append(winners_in_order[i].character.name)
                 i += 1
                 if len(winners_in_order) == i:
                     break
