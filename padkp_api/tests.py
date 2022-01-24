@@ -306,7 +306,7 @@ class ResolveAuctionTests(TestCase):
         data = eval(response.content)
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 21')
+            data['message'], 'Test Item awarded to - Lancegar for 21*')
         self.assertEqual(len(data['warnings']), 3)
         self.assertEqual(
             data['warnings'][0], 'Lancegar bid 21 dkp but only has 20 on the site')
@@ -485,7 +485,7 @@ class ResolveAuctionTests(TestCase):
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 15 - Quaff, RecruitBid Lost the tie')
+            data['message'], 'Test Item awarded to - Lancegar for 15 - Quaff, RecruitBid Lost the tie*')
         self.assertEqual(lance.current_dkp(), 5)
         self.assertEqual(len(auction.auctionbid_set.all()), 4)
 
@@ -653,7 +653,7 @@ class ResolveVickreyAuctionTests(TestCase):
         data = eval(response.content)
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 7')
+            data['message'], 'Test Item awarded to - Lancegar for 7*')
         self.assertEqual(len(data['warnings']), 3)
         self.assertEqual(
             data['warnings'][0], 'Lancegar bid 21 dkp but only has 20 on the site')
@@ -736,7 +736,7 @@ class ResolveVickreyAuctionTests(TestCase):
         data = eval(response.content)
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
-            data['message'], "Test Item awarded to - Lancegar's alt for 151")
+            data['message'], "Test Item awarded to - Lancegar's alt for 151*")
         self.assertEqual(len(data['warnings']), 2)
         self.assertEqual(char.current_alt_dkp(), -133)
 
@@ -756,7 +756,7 @@ class ResolveVickreyAuctionTests(TestCase):
         data = eval(response.content)
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
-            data['message'], "Test Item awarded to - RecruitBid for 6")
+            data['message'], "Test Item awarded to - RecruitBid for 6*")
         self.assertEqual(len(data['warnings']), 2)
         self.assertEqual(char.current_alt_dkp(), 18)
 
@@ -830,7 +830,7 @@ class ResolveVickreyAuctionTests(TestCase):
         char, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Another Item awarded to - Lancegar for 7')
+            data['message'], 'Another Item awarded to - Lancegar for 7*')
         self.assertEqual(char.current_dkp(), 6)
 
     def test_tie_message_format(self):
@@ -853,7 +853,7 @@ class ResolveVickreyAuctionTests(TestCase):
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 15 - Quaff, RecruitBid Lost the tie')
+            data['message'], 'Test Item awarded to - Lancegar for 15 - Quaff, RecruitBid Lost the tie*')
         self.assertEqual(lance.current_dkp(), 5)
         self.assertEqual(len(auction.auctionbid_set.all()), 4)
 
@@ -877,7 +877,7 @@ class ResolveVickreyAuctionTests(TestCase):
         lance, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 16')
+            data['message'], 'Test Item awarded to - Lancegar for 16*')
         self.assertEqual(lance.current_dkp(), 4)
         self.assertEqual(len(auction.auctionbid_set.all()), 5)
 
@@ -901,7 +901,7 @@ class ResolveVickreyAuctionTests(TestCase):
         lance, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 16, Lancegar for 16')
+            data['message'], 'Test Item awarded to - Lancegar for 16, Lancegar for 16*')
         self.assertEqual(lance.current_dkp(), -12)
         self.assertEqual(len(auction.auctionbid_set.all()), 5)
 

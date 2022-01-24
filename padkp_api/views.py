@@ -102,6 +102,10 @@ class ResolveAuction(viewsets.ViewSet):
                 tied.sort()
                 message = '{} awarded to - {} - {} Lost the tie'.format(
                     item_name, ', '.join(winners), ', '.join(tied))
+
+            if len(warnings) > 0:
+                message += "*"
+
             result = {
                 'message': message,
                 'warnings': warnings
@@ -148,6 +152,8 @@ class ResolveFlags(viewsets.ViewSet):
             message = '{}: {}'.format(
                     item_name, ', '.join(winners[0:item_count]))
 
+            if len(warnings) > 0:
+                message += "*"
             result = {
                 'message': message,
                 'warnings': warnings
