@@ -17,6 +17,11 @@ class MainChangeTests(TestCase):
         dump.save()
         dump.characters_present.set([self.char1])
 
+        time = timezone.now()
+        dump = RaidDump(value=4, attendance_value=1, time=time)
+        dump.save()
+        dump.characters_present.set([self.char2])
+
         Purchase(
             character=self.char1,
             item_name='Awesome Shiny',
@@ -31,6 +36,14 @@ class MainChangeTests(TestCase):
             value=3,
             time=time,
             is_alt=0,
+        ).save()
+
+        Purchase(
+            character=self.char2,
+            item_name='Awesome Alt Shiny2',
+            value=3,
+            time=time,
+            is_alt=1,
         ).save()
 
     def test_main_change_alt_settings_cleared(self):

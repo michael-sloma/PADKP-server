@@ -426,6 +426,8 @@ def main_change(name_from, name_to):
     for pair in new_alts:
         CharacterAlt.objects.create(name=pair[0], main=pair[1])
 
+    char_to_dkp = char_to.current_dkp()
+    char_to_alt_dkp = char_to.current_alt_dkp()
     char_from_dkp = char_from.current_dkp()
     char_from_alt_dkp = char_from.current_alt_dkp()
 
@@ -435,6 +437,14 @@ def main_change(name_from, name_to):
                     attendance_value=0,
                     time=dt.datetime.now(),
                     notes='main change to {}'.format(char_to.name)
+                    ).save()
+
+    # zero out the new main
+    DkpSpecialAward(character=char_to,
+                    value=-char_to_dkp,
+                    attendance_value=0,
+                    time=dt.datetime.now(),
+                    notes='reset for main change from {}'.format(char_from.name)
                     ).save()
 
     # transfer DKP to the new main
@@ -449,7 +459,7 @@ def main_change(name_from, name_to):
     Purchase(
         character=char_to,
         item_name='Main Change Alt DKP Adjustor',
-        value=char_from_dkp - char_from_alt_dkp,
+        value=char_from_dkp - char_from_alt_dkp - (char_to_dkp - char_to_alt_dkp),
         time=dt.datetime.now(),
         is_alt=1,
     ).save()
