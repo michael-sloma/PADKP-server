@@ -216,6 +216,9 @@ class Auction(models.Model):
     item_count = models.IntegerField(default=1)
     corrected = models.BooleanField(default=False)
 
+    class Meta:
+        ordering = ['-time']
+
     def __str__(self):
         time_str = self.time.astimezone(pytz.timezone(
             'US/Eastern')).strftime('%A, %d %b %Y %I:%M %p Eastern')
