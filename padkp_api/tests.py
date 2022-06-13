@@ -83,7 +83,7 @@ class CorrectAuctionTests(TestCase):
         response = view(request)
         response.render()
 
-        bids = [{'name': 'Quaff\'s alt', 'bid': '6'}]
+        bids = [{'name': 'Quaff\'s Alt', 'bid': '6'}]
         rdata = {'bids': bids, 'fingerprint': 'testfingerprint'}
         request = factory.post('/api/correct_auction/', rdata, format='json')
         force_authenticate(request, user=self.user)

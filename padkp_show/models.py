@@ -1,4 +1,5 @@
 import datetime as dt
+import re
 import pytz
 import random
 
@@ -138,7 +139,7 @@ class Character(models.Model):
 
     @classmethod
     def find_character(cls, cname):
-        new_name = cname.replace("'s alt", "")
+        new_name = re.sub("'s alt", "", cname, flags=re.IGNORECASE)
         is_alt = new_name != cname
         try:
             alt_obj = CharacterAlt.objects.get(pk=new_name)
