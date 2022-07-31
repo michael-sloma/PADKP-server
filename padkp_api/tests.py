@@ -636,6 +636,23 @@ class ResolveVickreyAuctionTests(TestCase):
         self.assertEqual(len(auction.auctionbid_set.all()), 3)
         self.assertEqual(auction, purchase.auction)
 
+    def test_double_rot_auction(self):
+        bids = []
+        item_name = 'Test Item'
+        item_count = 2
+        rdata = self.build_vickrey_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+        data = eval(response.content)
+        char, = Character.objects.filter(name='Lancegar')
+        self.assertEqual(
+            data['message'], 'Test Item recieved no bids')
+
     def test_warnings_on_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '21', 'tag': ''},
                 {'name': 'RecruitBid', 'bid': '6', 'tag': ''},
