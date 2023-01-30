@@ -170,7 +170,7 @@ class RaidDump(models.Model):
     attendance_value = models.IntegerField()
     time = models.DateTimeField()
     characters_present = models.ManyToManyField(
-        Character, related_name='raid_dumps')
+        Character, related_name='raid_dumps', limit_choices_to={'inactive': False})
     filename = models.CharField(max_length=50)
 
     type_choices = [('Time', 'Time'),
