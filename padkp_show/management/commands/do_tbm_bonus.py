@@ -71,7 +71,7 @@ class Command(BaseCommand):
             attendance = character.attendance(30)
             if character.name in self.overrides:
                 attendance = self.overrides[character.name]
-            bonus = int(attendance/5)
+            bonus = int(attendance*31/100)
             character.cap_alt_dkp(500, dry_run=False)
             if bonus > 0:
                 character.give_bonus(bonus, 'TDS Bonus: 31 dkp max based on 30 day attendance', dry_run=False)
