@@ -651,7 +651,7 @@ class ResolveVickreyAuctionTests(TestCase):
         data = eval(response.content)
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
-            data['message'], 'Test Item recieved no bids')
+            data['message'], 'Test Item awarded to - Rot, Rot')
 
     def test_warnings_on_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '21', 'tag': ''},
@@ -942,9 +942,9 @@ class ResolveVickreyAuctionTests(TestCase):
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 15, Quaff for 15, LowBid for 6')
-        self.assertEqual(lance.current_dkp(), 5)
-        self.assertEqual(quaff.current_dkp(), 5)
+            data['message'], 'Test Item awarded to - Lancegar for 7, Quaff for 7, LowBid for 6')
+        self.assertEqual(lance.current_dkp(), 13)
+        self.assertEqual(quaff.current_dkp(), 13)
         self.assertEqual(len(auction.auctionbid_set.all()), 4)
 
     def test_multi_item_tie_with_rot(self):
@@ -965,9 +965,9 @@ class ResolveVickreyAuctionTests(TestCase):
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 15, Quaff for 15, Rot')
-        self.assertEqual(lance.current_dkp(), 5)
-        self.assertEqual(quaff.current_dkp(), 5)
+            data['message'], 'Test Item awarded to - Lancegar for 1, Quaff for 1, Rot')
+        self.assertEqual(lance.current_dkp(), 19)
+        self.assertEqual(quaff.current_dkp(), 19)
         self.assertEqual(len(auction.auctionbid_set.all()), 2)
 
     def test_multi_item_fnf_not_triggered(self):
@@ -989,9 +989,9 @@ class ResolveVickreyAuctionTests(TestCase):
         recruit, = Character.objects.filter(name='RecruitBid')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - RecruitBid for 11, Lancegar for 1')
+            data['message'], 'Test Item awarded to - RecruitBid for 2, Lancegar for 1')
         self.assertEqual(lance.current_dkp(), 19)
-        self.assertEqual(recruit.current_dkp(), 9)
+        self.assertEqual(recruit.current_dkp(), 18)
         self.assertEqual(len(auction.auctionbid_set.all()), 2)
 
     def test_multi_item_without_rot(self):
@@ -1012,8 +1012,8 @@ class ResolveVickreyAuctionTests(TestCase):
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 6, Quaff for 1')
-        self.assertEqual(lance.current_dkp(), 14)
+            data['message'], 'Test Item awarded to - Lancegar for 2, Quaff for 1')
+        self.assertEqual(lance.current_dkp(), 18)
         self.assertEqual(quaff.current_dkp(), 19)
         self.assertEqual(len(auction.auctionbid_set.all()), 2)
 
@@ -1036,9 +1036,9 @@ class ResolveVickreyAuctionTests(TestCase):
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Quaff for 16, Lancegar for 1')
+            data['message'], 'Test Item awarded to - Quaff for 2, Lancegar for 1')
         self.assertEqual(lance.current_dkp(), 19)
-        self.assertEqual(quaff.current_dkp(), 4)
+        self.assertEqual(quaff.current_dkp(), 18)
         self.assertEqual(len(auction.auctionbid_set.all()), 3)
 
     def test_zero_bid_auction(self):

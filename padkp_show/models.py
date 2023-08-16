@@ -301,58 +301,70 @@ class Auction(models.Model):
         random.shuffle(bids)
         winners_in_order = sorted(
             bids, key=lambda b: sorting_criteria[b], reverse=True)
+
+        high_bid_flag = 'Main'
+        if len(winners_in_order) > 0:
+            high_bid_flag= winners_in_order[0].tag
+        if high_bid_flag == '':
+            high_bid_flag = 'Main'
+
+        def determine_value(target, sorts, high_bid_flag):
+            if target.tag == 'Main' or target.tag == '':
+                return sorts[target][0]
+            if target.tag == 'INA' or target.tag == 'Recruit':
+                if high_bid_flag == 'Main':
+                    return sorts[target][0]
+                return sorts[target][1]
+            if target.tag == 'ALT':
+                if high_bid_flag == 'ALT':
+                    return sorts[target][1]
+                return sorts[target][0]
+
+        effective_bids = [ determine_value(b, sorting_criteria, high_bid_flag) for b in winners_in_order ]
+
         tie_losers = []
         result = []
 
-        def determine_bid_value(bids, sorts, target):
-            i = -1
-            while i < len(bids)-1:
-                i += 1
-                curr = bids[i]
-                if curr.character == target.character: # bid is from you as well, doesn't block you.
-                    continue
-                if target.tag == 'Main' or target.tag == '':
-                    if curr.tag == 'ALT': #alt v ina
-                        if sorts[target][0] > 5:
-                            return min(sorts[curr][0]+1, sorts[target][0])
-                        if sorts[curr][0] <= sorts[target][0]:
-                            return min(sorts[curr][0]+1, sorts[target][0])
-                    elif curr.tag == 'Main' or curr.tag == '':
-                        if sorts[curr][0] <= sorts[target][0]: #blocking main vs main
-                            return min(sorts[curr][0]+1, sorts[target][0])
-                    else: #ina
-                        if sorts[target][0] > 10:
-                            return min(sorts[curr][0]+1, sorts[target][0])
-                        if sorts[curr][1] <= sorts[target][0]:
-                            return min(sorts[curr][0]+1, sorts[target][0])
-                elif target.tag == 'ALT':
-                    if curr.tag == 'ALT': #alt v alt
-                        if sorts[curr][1] <= sorts[target][1]:
-                            return min(sorts[curr][1]+1, sorts[target][1])
-                    elif curr.tag == 'Main' or curr.tag == '': #alt v main
-                        if sorts[curr][0] <= sorts[target][0]:
-                            return min(sorts[curr][0]+1, sorts[target][1])
-                    else: #alt vs inactive
-                        if sorts[curr][0] <= sorts[target][0]:
-                            return min(sorts[curr][1]+1, sorts[target][1])
-                else: #inactive
-                    if curr.tag == 'ALT': #alt v ina
-                        if sorts[curr][0] <= sorts[target][0]:
-                            return min(sorts[curr][0]+1, sorts[target][1])
-                    elif curr.tag == 'Main' or curr.tag == '': #main vs ina
-                        if sorts[curr][0] <= sorts[target][0]:
-                            return min(sorts[curr][0]+1, sorts[target][1])
-                    else: #ina vs inactive
-                        if sorts[curr][0] <= sorts[target][0]:
-                            return min(sorts[curr][1]+1, sorts[target][1])
-            return 1
+        i = self.item_count - 1
+        last_replaced = 0
+        if i < len(effective_bids):
+            j = i+1
+            last_winner = winners_in_order[i].character
+            while len(winners_in_order) > j:
+                if last_winner != winners_in_order[j].character:
+                    last_replaced = effective_bids[j]
+                    break
+                j+=1
+
+        adjusted_bids = []
+
+        while i >= 0:
+            if i > len(effective_bids)-1:
+                adjusted_bids.append(0)
+                i-=1
+                continue
+            if effective_bids[i] == last_replaced:
+                newval = last_replaced
+                if len(adjusted_bids) > 0:
+                    newval = adjusted_bids[-1]
+                adjusted_bids.append(newval)
+                i-=1
+                continue
+            newval = last_replaced
+            if len(adjusted_bids) > 0:
+                newval = adjusted_bids[-1]
+            adjusted_bids.append(newval+1)
+            last_replaced = effective_bids[i]
+            i -= 1
+
+        adjusted_bids.reverse()
 
         i = 0
         while i < self.item_count:
             if i >= len(winners_in_order):
                 break
             curr_bid = winners_in_order[i]
-            bid = determine_bid_value(winners_in_order, sorting_criteria, curr_bid)
+            bid = adjusted_bids[i]
             result.append({'char': curr_bid.character, 'bid': bid, 'tag': curr_bid.tag })
             i += 1
 

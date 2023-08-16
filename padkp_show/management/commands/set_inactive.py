@@ -42,8 +42,8 @@ class Command(BaseCommand):
                 char.save()
 
             if (today - char.date_inactive) >= dt.timedelta(days=15):
-                char.cap_dkp(50,
-                             'Capped DKP at 50 because character went inactive on {} and was still inactive on {}'.format(
+                char.cap_dkp(0,
+                             'Capped DKP at 0 because character went inactive on {} and was still inactive on {}'.format(
                                  char.date_inactive, today),
                              dry_run=False)
 
