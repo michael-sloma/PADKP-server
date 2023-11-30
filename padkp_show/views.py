@@ -122,8 +122,8 @@ def character_dkp(request, character):
     days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
     days_ago_14 = dt.datetime.utcnow() - dt.timedelta(days=14)
     if display_all:
-        days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=5000)
-        days_ago_14 = dt.datetime.utcnow() - dt.timedelta(days=5000)
+        days_ago_30 = RaidDump.objects.filter(characters_present=character).earliest('time').time
+        days_ago_14 = days_ago_30
     present_awards_14 = sorted([x for x in RaidDump.objects.filter(time__gte=days_ago_30, characters_present=character)] +
                                [x for x in DkpSpecialAward.objects.filter(
                                    time__gte=days_ago_30, character=character)],
