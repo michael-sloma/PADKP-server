@@ -5,13 +5,13 @@
     </div>
     <div class="navbar-collapse">
       <ul class="nav navbar-nav" style="display: flex; align-items: center;">
-        <li {% ifequal request.path "/" %} class="active" {% endifequal %}><a href="/">Home</a></li>
-        <li {% ifequal request.path "/items/" %} class="active" {% endifequal %}><a href="/items/">Items</a></li>
-        <li {% ifequal request.path "/awards/" %} class="active" {% endifequal %}><a href="/awards/">Awards</a></li>
-        <li {% ifequal request.path "/attendance/" %} class="active" {% endifequal %}>
+        <li {% if request.path == "/" %} class="active" {% endif %}><a href="/">Home</a></li>
+        <li {% if request.path == "/items/" %} class="active" {% endif %}><a href="/items/">Items</a></li>
+        <li {% if request.path == "/awards/" %} class="active" {% endif %}><a href="/awards/">Awards</a></li>
+        <li {% if request.path == "/attendance/" %} class="active" {% endif %}>
           <a href="/attendance/">Attendance</a>
         </li>
-        <li {% ifequal request.path "/class_balance/" %} class="active" {% endifequal %}>
+        <li {% if request.path == "/class_balance/" %} class="active" {% endif %}>
           <a href="/class_balance/">Class Balance</a>
         </li>
         <li><a href="/rules/">Rules</a></li>
