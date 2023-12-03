@@ -158,7 +158,8 @@ def character_dkp(request, character):
                'character_class': c_obj.character_class,
                'rank': display_rank,
                'purchases_30': purchases_30,
-               'awards_14': awards_14
+               'awards_14': awards_14,
+               'days_since_raid': days_since_raid
                }
 
     return HttpResponse(template.render(context, request))
