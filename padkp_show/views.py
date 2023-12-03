@@ -1,4 +1,5 @@
 import datetime as dt
+from datetime import timezone
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse
@@ -118,6 +119,11 @@ def character_dkp(request, character):
     current_dkp = c_obj.current_dkp()
     alt_dkp = c_obj.current_alt_dkp()
     attendance_30 = '%.1f' % (c_obj.attendance(30))
+
+    most_recent_date = RaidDump.objects.filter(characters_present=character).latest('time')
+    days_since_raid = None
+    if most_recent_date:
+        days_since_raid = (dt.datetime.now(timezone.utc) - most_recent_date.time).days
 
     days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
     days_ago_14 = dt.datetime.utcnow() - dt.timedelta(days=14)

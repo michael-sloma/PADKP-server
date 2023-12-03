@@ -287,14 +287,24 @@ class Auction(models.Model):
 
 
     def determine_winners_vickrey(self):
-        def ordering(bid):
-            char = bid.character
+        def max_bid(bid):
             max_bid = bid.bid
             if bid.tag == 'ALT':
                 max_bid = min(max_bid, 5)
-            if bid.tag in ['INA', 'Recruit', 'FNF']:
-                max_bid = min(max_bid, 10)
-            return max_bid, bid.bid, bid.dkp_snapshot, bid.att_snapshot
+            return max_bid
+
+        def ordering(bid):
+            return max_bid(bid), bid.bid, bid.dkp_snapshot, bid.att_snapshot
+
+        def offset_value(target, offset, tie_fallback):
+            if offset is None:
+                return 1
+            if offset.tag == 'ALT' and target.tag != 'ALT':
+                return max_bid(offset)+1
+            if offset.bid == target.bid:
+                return min(tie_fallback, target.bid)
+            return offset.bid+1
+
 
         bids = [b for b in self.auctionbid_set.all()]
         sorting_criteria = {b: ordering(b) for b in bids}
@@ -302,82 +312,55 @@ class Auction(models.Model):
         winners_in_order = sorted(
             bids, key=lambda b: sorting_criteria[b], reverse=True)
 
-        high_bid_flag = 'Main'
-        if len(winners_in_order) > 0:
-            high_bid_flag= winners_in_order[0].tag
-        if high_bid_flag == '':
-            high_bid_flag = 'Main'
-
-        def determine_value(target, sorts, high_bid_flag):
-            if target.tag == 'Main' or target.tag == '':
-                return sorts[target][0]
-            if target.tag == 'INA' or target.tag == 'Recruit':
-                if high_bid_flag == 'Main':
-                    return sorts[target][0]
-                return sorts[target][1]
-            if target.tag == 'ALT':
-                if high_bid_flag == 'ALT':
-                    return sorts[target][1]
-                return sorts[target][0]
-
-        effective_bids = [ determine_value(b, sorting_criteria, high_bid_flag) for b in winners_in_order ]
-
-        tie_losers = []
+        main_winners = [x for x in winners_in_order[0:self.item_count] if x.tag != 'ALT' ]
+        alt_winners = [x for x in winners_in_order[0:self.item_count] if x.tag == 'ALT' ]
+        all_winners = main_winners + alt_winners
+        left_overs = [x for x in winners_in_order if x not in all_winners]
         result = []
+        tie_losers = []
 
-        i = self.item_count - 1
-        last_replaced = 0
-        if i < len(effective_bids):
-            j = i+1
-            last_winner = winners_in_order[i].character
-            while len(winners_in_order) > j:
-                if last_winner != winners_in_order[j].character:
-                    last_replaced = effective_bids[j]
-                    break
-                j+=1
+        effective_count = min(len(all_winners), self.item_count)
 
-        adjusted_bids = []
+        if effective_count == 0:
+            return [tie_losers, reversed(result)]
 
-        while i >= 0:
-            if i > len(effective_bids)-1:
-                adjusted_bids.append(0)
-                i-=1
-                continue
-            if effective_bids[i] == last_replaced:
-                newval = last_replaced
-                if len(adjusted_bids) > 0:
-                    newval = adjusted_bids[-1]
-                adjusted_bids.append(newval)
-                i-=1
-                continue
-            newval = last_replaced
-            if len(adjusted_bids) > 0:
-                newval = adjusted_bids[-1]
-            adjusted_bids.append(newval+1)
-            last_replaced = effective_bids[i]
-            i -= 1
+        # print('all:', all_winners)
+        # print('leftovers:', left_overs)
 
-        adjusted_bids.reverse()
+        last_winner = all_winners[effective_count-1]
+        offset_from = None
+        for possible in all_winners[effective_count:]:
+            if possible.character != last_winner.character:
+                if possible.bid == last_winner.bid:
+                    tie_losers.append(possible.character.name)
+                if offset_from is None:
+                    offset_from = possible
+        for possible in left_overs:
+            if possible.character != last_winner.character:
+                if possible.bid == last_winner.bid:
+                    tie_losers.append(possible.character.name)
+                if offset_from is None:
+                    offset_from = possible
 
-        i = 0
-        while i < self.item_count:
-            if i >= len(winners_in_order):
-                break
-            curr_bid = winners_in_order[i]
-            bid = adjusted_bids[i]
-            result.append({'char': curr_bid.character, 'bid': bid, 'tag': curr_bid.tag })
-            i += 1
+        replacing = last_winner.bid
 
-        if len(winners_in_order) > self.item_count:  # More bidders than items to hand out
-            i = self.item_count
-            while winners_in_order[i-1].bid == winners_in_order[i].bid:
-                if winners_in_order[i-1].character != winners_in_order[i].character:
-                    tie_losers.append(winners_in_order[i].character.name)
-                i += 1
-                if len(winners_in_order) == i:
-                    break
+        def last_result_bid():
+            if len(result) > 0:
+                return result[len(result)-1]['bid']
+            else:
+                return 10000
 
-        return [tie_losers, result]
+
+        for winner in reversed(all_winners[0:effective_count]):
+            new_bid = min(last_result_bid()+1, offset_value(winner, offset_from, last_result_bid()))
+            # print(f'{new_bid}:{replacing}')
+            offset_from = winner
+            replacing = winner.bid
+
+            result.append({'char': winner.character, 'bid': new_bid, 'tag': winner.tag })
+
+
+        return [tie_losers, reversed(result)]
 
 class AuctionBid(models.Model):
     """ Represents a bid in an auction """

@@ -55,7 +55,11 @@ class CorrectAuctionTests(TestCase):
         response = view(request)
         response.render()
 
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Quaff')
         lance, = Character.objects.filter(name='Lancegar')
         purchase, = Purchase.objects.filter(character=char, value=6)
@@ -91,7 +95,11 @@ class CorrectAuctionTests(TestCase):
         response = view(request)
         response.render()
 
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Quaff')
         lance, = Character.objects.filter(name='Lancegar')
         purchase, = Purchase.objects.filter(character=char, value=6)
@@ -128,7 +136,11 @@ class CorrectAuctionTests(TestCase):
         response = view(request)
         response.render()
 
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='LowBid')
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
@@ -189,6 +201,7 @@ class CancelAuctionTests(TestCase):
         response = view(request)
         response.render()
 
+
         data = eval(response.content)
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(data, 'Auction is more than two hours old')
@@ -218,7 +231,11 @@ class CancelAuctionTests(TestCase):
         response = view(request)
         response.render()
 
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         auctions = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         abids = AuctionBid.objects.all()
         purchases = Purchase.objects.filter(auction__isnull=False)
@@ -279,7 +296,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         purchase, = Purchase.objects.filter(character=char, value=7)
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -303,7 +324,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], 'Test Item awarded to - Lancegar for 21*')
@@ -328,7 +353,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], 'Test Item awarded to - Lancegar for 11')
@@ -347,7 +376,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], 'Test Item awarded to - RecruitBid for 15')
@@ -366,7 +399,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], 'Test Item awarded to - RecruitBid for 15')
@@ -385,7 +422,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], "Test Item awarded to - Lancegar's alt for 11")
@@ -405,7 +446,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         bid, = AuctionBid.objects.filter(character=char)
         self.assertEqual(
@@ -427,7 +472,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         bid, = AuctionBid.objects.filter(character=char)
         self.assertEqual(
@@ -458,7 +507,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
@@ -480,7 +533,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -504,7 +561,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -527,7 +588,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -549,7 +614,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
@@ -569,7 +638,11 @@ class ResolveAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -626,7 +699,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         purchase, = Purchase.objects.filter(character=char, value=7)
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -648,7 +725,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], 'Test Item awarded to - Rot, Rot')
@@ -667,7 +748,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], 'Test Item awarded to - Lancegar for 7*')
@@ -679,6 +764,7 @@ class ResolveVickreyAuctionTests(TestCase):
         self.assertEqual(
             data['warnings'][2], 'Received bid for unknown character: NotRealBidder')
 
+    # This no longer exists, recruit bid now wins
     def test_fnf_cutoff_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '11', 'tag': ''},
                 {'name': 'RecruitBid', 'bid': '15', 'tag': 'Recruit'}]
@@ -692,10 +778,14 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 11')
+            data['message'], 'Test Item awarded to - RecruitBid for 12')
         self.assertEqual(len(data['warnings']), 0)
 
     def test_fnf_over_cutoff_auction(self):
@@ -711,7 +801,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], 'Test Item awarded to - RecruitBid for 6')
@@ -730,7 +824,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], "Test Item awarded to - Lancegar's alt for 6")
@@ -750,7 +848,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], "Test Item awarded to - Lancegar's alt for 151*")
@@ -770,7 +872,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         self.assertEqual(
             data['message'], "Test Item awarded to - RecruitBid for 6*")
@@ -790,7 +896,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         bid, = AuctionBid.objects.filter(character=char)
         self.assertEqual(
@@ -812,7 +922,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         bid, = AuctionBid.objects.filter(character=char)
         self.assertEqual(
@@ -843,7 +957,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         char, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
@@ -865,7 +983,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -890,7 +1012,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
@@ -914,7 +1040,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
@@ -937,7 +1067,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -962,14 +1096,18 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
-        quaff, = Character.objects.filter(name='Quaff')
+        recruit, = Character.objects.filter(name='RecruitBid')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
             data['message'], 'Test Item awarded to - Lancegar for 6, RecruitBid\'s alt for 190*')
-        self.assertEqual(lance.current_dkp(), 13)
-        self.assertEqual(quaff.current_dkp(), 13)
+        self.assertEqual(lance.current_dkp(), 14)
+        self.assertEqual(recruit.current_alt_dkp(), -170)
         self.assertEqual(len(auction.auctionbid_set.all()), 4)
 
     def test_multi_item_tie_with_rot(self):
@@ -985,7 +1123,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -1008,7 +1150,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
 
         lance, = Character.objects.filter(name='Lancegar')
         recruit, = Character.objects.filter(name='RecruitBid')
@@ -1033,6 +1179,9 @@ class ResolveVickreyAuctionTests(TestCase):
         response = view(request)
         response.render()
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -1056,7 +1205,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -1078,7 +1231,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
@@ -1098,7 +1255,11 @@ class ResolveVickreyAuctionTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         lance, = Character.objects.filter(name='Lancegar')
         quaff, = Character.objects.filter(name='Quaff')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
@@ -1144,7 +1305,11 @@ class TiebreakTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         self.assertEqual(data[0][0], 'Lancegar')
         self.assertEqual(data[1][0], 'Quaff')
 
@@ -1157,7 +1322,11 @@ class TiebreakTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         self.assertEqual(data[0][0], 'Quaff2')
         self.assertEqual(data[1][0], 'Quaff')
         self.assertEqual(
@@ -1172,7 +1341,11 @@ class TiebreakTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         self.assertEqual(data[0][0], 'Quaff')
         self.assertEqual(data[1][0], 'Lancegar\'s alt')
         self.assertEqual(
@@ -1187,7 +1360,11 @@ class TiebreakTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         self.assertEqual(data[0][0], 'Quaff')
         self.assertEqual(data[1][0], 'Seped\'s alt')
         self.assertEqual(
@@ -1202,7 +1379,11 @@ class TiebreakTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         self.assertEqual(data[0][0], 'Quaff')
         self.assertEqual(data[1][0], 'Seped')
         self.assertEqual(
@@ -1238,7 +1419,11 @@ class ChargeDKPTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         self.assertEqual(data, 'DKP charge successful')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(self.char1.current_dkp(), 15)
@@ -1261,7 +1446,11 @@ class ChargeDKPTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         self.assertEqual(data, 'DKP charge successful')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(self.char1.current_dkp(), 20)
@@ -1284,7 +1473,11 @@ class ChargeDKPTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         self.assertEqual(data, 'DKP charge successful')
         self.assertEqual(response.status_code, 201)
         self.assertEqual(self.char1.current_dkp(), 20)
@@ -1324,7 +1517,11 @@ class ResolveFlagsTests(TestCase):
         force_authenticate(request, user=self.user)
         response = view(request)
         response.render()
+
         data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
         self.assertTrue('Lancegar' in data['message'])
         self.assertTrue('Quaff2' in data['message'])
         self.assertTrue('RecruitBid' in data['message'])
