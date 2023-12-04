@@ -301,7 +301,7 @@ class Auction(models.Model):
                 return 1
             if offset.tag == 'ALT' and target.tag != 'ALT':
                 return max_bid(offset)+1
-            if offset.bid == target.bid:
+            if offset.bid == target.bid or offset.character == target.character:
                 return min(tie_fallback, target.bid)
             return offset.bid+1
 
@@ -350,7 +350,8 @@ class Auction(models.Model):
             else:
                 return 10000
 
-
+        # print(offset_from)
+        # print(last_winner)
         for winner in reversed(all_winners[0:effective_count]):
             new_bid = min(last_result_bid()+1, offset_value(winner, offset_from, last_result_bid()))
             # print(f'{new_bid}:{replacing}')

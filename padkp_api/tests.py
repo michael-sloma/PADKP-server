@@ -1081,6 +1081,37 @@ class ResolveVickreyAuctionTests(TestCase):
         self.assertEqual(quaff.current_dkp(), 13)
         self.assertEqual(len(auction.auctionbid_set.all()), 4)
 
+    def test_multi_item_real_problem_auction2(self):
+        bids = [{'name': 'Lancegar', 'bid': '10', 'tag': ''},
+                {'name': 'Quaff', 'bid': '10', 'tag': ''},
+                {'name': 'LowBid', 'bid': '50', 'tag': 'ALT'},
+                {'name': 'LowBid', 'bid': '50', 'tag': 'ALT'},
+                {'name': 'LowBid', 'bid': '40', 'tag': 'ALT'},
+                {'name': 'RecruitBid', 'bid': '25', 'tag': 'ALT'},]
+        item_name = 'Test Item'
+        item_count = 5
+        rdata = self.build_vickrey_auction_json(bids, item_count, item_name)
+        factory = APIRequestFactory()
+        request = factory.post('/api/resolve_auction/', rdata, format='json')
+        view = resolve(request.get_full_path()).func
+
+        force_authenticate(request, user=self.user)
+        response = view(request)
+        response.render()
+
+        data = eval(response.content)
+        if response.status_code >= 300:
+            print(response.content); self.assertTrue(False)
+            return
+        lance, = Character.objects.filter(name='Lancegar')
+        recruit, = Character.objects.filter(name='LowBid')
+        auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
+        self.assertEqual(
+            data['message'], 'Test Item awarded to - Lancegar for 6, Quaff for 6, LowBid\'s alt for 26, LowBid\'s alt for 26, LowBid\'s alt for 26*')
+        self.assertEqual(lance.current_dkp(), 14)
+        self.assertEqual(recruit.current_alt_dkp(), -58)
+        self.assertEqual(len(auction.auctionbid_set.all()), 6)
+
     def test_multi_item_real_problem_auction(self):
         bids = [{'name': 'Lancegar', 'bid': '6', 'tag': ''},
                 {'name': 'Quaff', 'bid': '4', 'tag': ''},
