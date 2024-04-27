@@ -46,5 +46,6 @@ class Command(BaseCommand):
                              'Capped DKP at 0 because character went inactive on {} and was still inactive on {}'.format(
                                  char.date_inactive, today),
                              dry_run=False)
+                char.cap_alt_dkp(0, dry_run=False)
 
         print('set_inactive script complete')

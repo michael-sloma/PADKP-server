@@ -95,13 +95,14 @@ class Character(models.Model):
         if current_dkp <= cap:
             return False
         else:
-            cap_penalty = cap - current_dkp
-            assert cap_penalty < 0
-            award = DkpSpecialAward(character=self,
-                                    value=cap_penalty,
-                                    attendance_value=0,
-                                    time=dt.datetime.utcnow(),
-                                    notes=notes)
+            cap_penalty = current_dkp - cap
+            assert cap_penalty > 0
+            award = Purchase(character=self,
+                             item_name='Main DKP Cap Adjustment',
+                             value=cap_penalty,
+                             time=dt.datetime.now(),
+                             notes = notes,
+                             is_alt=0)
             print('capping {} at {} dkp (had {})'.format(
                 self.name, cap, current_dkp))
             if not dry_run:

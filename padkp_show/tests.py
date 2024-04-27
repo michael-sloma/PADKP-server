@@ -5,6 +5,67 @@ from django.utils import timezone
 import datetime as dt
 
 
+class DkpCapTests(TestCase):
+    def setUp(self):
+        self.char1 = Character.objects.create(name='Lancegar', status='MN')
+        CharacterAlt.objects.create(name='Seped', main=self.char1)
+        CharacterAlt.objects.create(name='AnotherAlt', main=self.char1)
+        time = timezone.now()
+        dump = RaidDump(value=200, attendance_value=1, time=time)
+        dump.save()
+        dump.characters_present.set([self.char1])
+        dump.save()
+
+    def test_dkp_cap_doesnt_change_alt_dkp(self):
+        Purchase(
+            character=self.char1,
+            item_name='Offset',
+            value=50,
+            time = timezone.now(),
+            is_alt=1,
+        ).save()
+
+        self.char1.refresh_from_db()
+
+        self.char1.cap_dkp(60, "", dry_run=False)
+
+        self.char1.refresh_from_db()
+
+
+        self.assertEqual(self.char1.current_dkp(), 60)
+        self.assertEqual(self.char1.current_alt_dkp(), 150)
+
+    def test_dkp_cap_alt_dkp_doesnt_change_dkp(self):
+        Purchase(
+            character=self.char1,
+            item_name='Offset',
+            value=50,
+            time = timezone.now(),
+            is_alt=0,
+        ).save()
+
+        self.char1.refresh_from_db()
+
+        self.char1.cap_alt_dkp(60, dry_run=False)
+
+        self.char1.refresh_from_db()
+
+
+        self.assertEqual(self.char1.current_dkp(), 150)
+        self.assertEqual(self.char1.current_alt_dkp(), 60)
+
+    def test_dkp_caps_not_conflicting(self):
+
+        self.char1.cap_alt_dkp(60, dry_run=False)
+        self.char1.cap_dkp(60, "", dry_run=False)
+
+        self.char1.refresh_from_db()
+
+
+        self.assertEqual(self.char1.current_dkp(), 60)
+        self.assertEqual(self.char1.current_alt_dkp(), 60)
+
+
 class MainChangeTests(TestCase):
 
     def setUp(self):
