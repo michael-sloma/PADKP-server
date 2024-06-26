@@ -14,7 +14,7 @@ class Command(BaseCommand):
         for character in Character.objects.all():
             attendance = character.attendance(30)
             bonus = int(attendance*40/100)
-            character.cap_alt_dkp(500, dry_run=False)
+            character.cap_alt_dkp(300, dry_run=False)
             character.cap_dkp(300, "ToL Cap", dry_run=False)
             if bonus > 0:
                 character.give_bonus(bonus, 'ToL: 40 dkp max based on 30 day attendance', dry_run=False)
