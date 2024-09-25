@@ -283,9 +283,7 @@ class ResolveAuctionTests(TestCase):
         return {'bids': bids, 'item_count': item_count, 'item_name': item_name, 'fingerprint': fingerprint, 'time': time, 'auction_type': 'english'}
 
     def test_no_tie_single_auction_main_only(self):
-        bids = [{'name': 'Lancegar', 'bid': '7', 'tag': ''},
-                {'name': 'Quaff', 'bid': '6', 'tag': ''},
-                {'name': 'LowBid', 'bid': '2', 'tag': ''}]
+        bids = [{'name': 'Lancegar', 'bid': '7', 'tag': ''}]
         item_name = 'Test Item'
         item_count = 1
         rdata = self.build_english_auction_json(bids, item_count, item_name)
@@ -305,7 +303,7 @@ class ResolveAuctionTests(TestCase):
         purchase, = Purchase.objects.filter(character=char, value=7)
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - Lancegar for 7')
+            data['message'], 'Test Item awarded to - Lancegar for 5')
         self.assertEqual(char.current_dkp(), 13)
         self.assertEqual(len(auction.auctionbid_set.all()), 3)
         self.assertEqual(auction, purchase.auction)

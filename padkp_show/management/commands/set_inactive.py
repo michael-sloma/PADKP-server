@@ -13,6 +13,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print('running set_inactive script')
 
+        print('script disabled for now')
+        return
+
         days_ago_30 = dt.datetime.utcnow() - dt.timedelta(days=30)
         characters_raided_last_30_q = RaidDump.objects.filter(
             time__gte=days_ago_30).values('characters_present')

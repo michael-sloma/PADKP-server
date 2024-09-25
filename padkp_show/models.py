@@ -291,7 +291,7 @@ class Auction(models.Model):
         def max_bid(bid):
             max_bid = bid.bid
             if bid.tag == 'ALT':
-                max_bid = min(max_bid, 5)
+                max_bid = min(max_bid, 15)
             return max_bid
 
         def ordering(bid):
