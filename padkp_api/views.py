@@ -100,7 +100,7 @@ class ResolveAuction(viewsets.ViewSet):
                     item_name, ', '.join(winners))
             else:
                 tied.sort()
-                message = '{} awarded to - {} - {} Lost the tie'.format(
+                message = '{} awarded to - {} - {} Lost the random tiebreaker'.format(
                     item_name, ', '.join(winners), ', '.join(tied))
 
             if len(warnings) > 0:

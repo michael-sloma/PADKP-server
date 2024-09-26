@@ -295,11 +295,11 @@ class Auction(models.Model):
             return max_bid
 
         def ordering(bid):
-            return max_bid(bid), bid.bid, bid.dkp_snapshot, bid.att_snapshot
+            return max_bid(bid), bid.bid
 
         def offset_value(target, offset, tie_fallback):
             if offset is None:
-                return 1
+                return 5
             if offset.tag == 'ALT' and target.tag != 'ALT':
                 return max_bid(offset)+1
             if offset.bid == target.bid or offset.character == target.character:
@@ -354,7 +354,7 @@ class Auction(models.Model):
         # print(offset_from)
         # print(last_winner)
         for winner in reversed(all_winners[0:effective_count]):
-            new_bid = min(last_result_bid()+1, offset_value(winner, offset_from, last_result_bid()))
+            new_bid = min(last_result_bid(), offset_value(winner, offset_from, last_result_bid()))
             # print(f'{new_bid}:{replacing}')
             offset_from = winner
             replacing = winner.bid

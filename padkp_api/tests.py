@@ -1051,7 +1051,7 @@ class ResolveVickreyAuctionTests(TestCase):
         self.assertEqual(len(auction.auctionbid_set.all()), 5)
 
     def test_multi_item_complicated_auction(self):
-        bids = [{'name': 'Lancegar', 'bid': '15', 'tag': ''},
+        bids = [{'name': 'Lancegar', 'bid': '16', 'tag': ''},
                 {'name': 'Quaff', 'bid': '15', 'tag': ''},
                 {'name': 'LowBid', 'bid': '8', 'tag': ''},
                 {'name': 'RecruitBid', 'bid': '20', 'tag': 'ALT'}]
