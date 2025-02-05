@@ -5,8 +5,10 @@ Simple DKP display and CRUD operations
 ##Development Instructions
 (On windows)
 * Install Python 3.7 and pip.
-* python -m pip install Django
-* python -m pip install djangorestframework
+* py -m pip install Django==2.2.7
+* py -m pip install djangorestframework==3.10.3
+* py -m pip install pytz
+* py -m pip install setuptools
 * for VSCode linting:
   * pip install pylint-django
   * preferences -> "python.linting.pylintArgs": [ "--load-plugins=pylint_django" ]

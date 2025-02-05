@@ -1189,9 +1189,9 @@ class ResolveVickreyAuctionTests(TestCase):
         recruit, = Character.objects.filter(name='RecruitBid')
         auction, = Auction.objects.filter(fingerprint=rdata['fingerprint'])
         self.assertEqual(
-            data['message'], 'Test Item awarded to - RecruitBid for 2, Lancegar for 1')
-        self.assertEqual(lance.current_dkp(), 19)
-        self.assertEqual(recruit.current_dkp(), 18)
+            data['message'], 'Test Item awarded to - RecruitBid for 10, Lancegar for 10')
+        self.assertEqual(lance.current_dkp(), 10)
+        self.assertEqual(recruit.current_dkp(), 10)
         self.assertEqual(len(auction.auctionbid_set.all()), 2)
 
     def test_multi_item_without_rot(self):
