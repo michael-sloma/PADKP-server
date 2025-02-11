@@ -330,7 +330,7 @@ class Auction(models.Model):
 
         last_winner = all_winners[effective_count-1]
         offset_from = None
-        if self.item_count > 0 and self.item_count <= len(bids):
+        if self.item_count > 1 and self.item_count <= len(bids):
             offset_from = last_winner
         for possible in all_winners[effective_count:]:
             if possible.character != last_winner.character:
